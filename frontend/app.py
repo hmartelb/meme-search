@@ -1,4 +1,5 @@
 import os
+import re
 
 import requests
 from flask import Flask, redirect, render_template, request, url_for
@@ -9,6 +10,16 @@ app.config.from_object('config')
 
 # assets = Environment(app)
 
+def check_url_in_query(text):
+    '''
+    Modified the method to just return whether or not there is an url
+    https://www.geeksforgeeks.org/python-check-url-string/
+    '''
+    regex = r"(?i)\b((?:https?://|www\d{0,3}[.]|[a-z0-9.\-]+[.][a-z]{2,4}/)(?:[^\s()<>]+|\(([^\s()<>]+|(\([^\s()<>]+\)))*\))+(?:\(([^\s()<>]+|(\([^\s()<>]+\)))*\)|[^\s`!()\[\]{};:'\".,<>?«»“”‘’]))"
+    urls = re.findall(regex, text)      
+    urls = [x[0] for x in urls]
+    return len(urls) > 0
+
 def get_default_results():
     r = {
         'name': "Meme", 
@@ -16,16 +27,18 @@ def get_default_results():
     }
     return [r for _ in range(100)]
 
-@app.route('/')#, methods=['GET', 'POST'])
+@app.route('/')
 def index():
-    # if request.method == 'POST':
-    #     query = request.form.get('query')
-    #     return redirect(url_for('index', query=query))
-    # else:
     results = []
     query = request.args.get('query', None)
     if query is not None:
-        ## make API call here
+        # Make API calls here
+        if check_url_in_query(query):
+            # Retrieve image from url, extract features and search 
+            print("Is URL: ", query)
+        else:
+            # Search using text input
+            print("Normal text:", query)
         results = get_default_results()
 
     return render_template('pages/index.html', title='Meme search', query=query, results=results)
