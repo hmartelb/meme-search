@@ -9,13 +9,26 @@ app.config.from_object('config')
 
 # assets = Environment(app)
 
-@app.route('/', methods=['GET', 'POST'])
+def get_default_results():
+    r = {
+        'name': "Meme", 
+        'url': "https://pbs.twimg.com/media/EWmtqxnXgAAZUFa.jpg"
+    }
+    return [r for _ in range(10)]
+
+@app.route('/')#, methods=['GET', 'POST'])
 def index():
-    if request.method == 'POST':
-        print('query', request.args.get('query',' '))
-        return render_template('pages/index.html', title='Meme src')
-    else:
-        return render_template('pages/index.html', title='Meme search')
+    # if request.method == 'POST':
+    #     query = request.form.get('query')
+    #     return redirect(url_for('index', query=query))
+    # else:
+    results = []
+    query = request.args.get('query', None)
+    if query is not None:
+        ## make API call here
+        results = get_default_results()
+        
+    return render_template('pages/index.html', title='Meme search', query=query, results=results)
 
 
 if __name__ == '__main__':
