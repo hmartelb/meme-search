@@ -1,0 +1,23 @@
+{% macro result_box(result) -%}
+	<div class="card">
+		<a href="{{ url_for('index') }}">
+			<img class="card-img-top" src="{{ result.url }}" alt="{{ result.name }}">
+		</a>
+			<div class="card-body">
+				<a href="{{ url_for('index') }}">
+					<h4 class="card-title">{{ result.name }}</h4>
+				</a>
+			<button type="button" class="btn btn-light">
+				<!-- <i class="fas fa-download"></i> -->
+				Download
+			</button>
+			<button type="button" class="btn btn-success">
+				<!-- <i class="far fa-thumbs-up"></i> -->
+				Like
+			</button>
+			</div>
+			<div class="card-footer">
+				<small class="text-muted">Last updated 3 mins ago. Result box</small>
+			</div>
+	</div>
+{%- endmacro %}

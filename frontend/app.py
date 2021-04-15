@@ -14,7 +14,7 @@ def get_default_results():
         'name': "Meme", 
         'url': "https://pbs.twimg.com/media/EWmtqxnXgAAZUFa.jpg"
     }
-    return [r for _ in range(10)]
+    return [r for _ in range(100)]
 
 @app.route('/')#, methods=['GET', 'POST'])
 def index():
@@ -27,7 +27,7 @@ def index():
     if query is not None:
         ## make API call here
         results = get_default_results()
-        
+
     return render_template('pages/index.html', title='Meme search', query=query, results=results)
 
 
