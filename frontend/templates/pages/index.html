@@ -6,6 +6,31 @@
 
 {% block content %}
 {% if query is not none %}
+	<div class="container">
+
+		<div class="row">
+			<div class="col-sm-12 text wow fadeInUp">
+				
+				<!-- <h3><strong>Search</strong> your meme</h3> -->
+
+				<form class="form" method="GET" action="{{ url_for('index') }}">
+					<div class="row" style="margin-left: 0px; margin-right: 0px;">
+						<div class="col-xs-2" style="padding-left: 0px; padding-right: 0px;">
+							<img src="{{ url_for('static', filename='img/doge.png') }}" style="max-width: 40px; text-align: right;">
+						</div>
+						<div class="col-xs-8" style="padding-left: 0px; padding-right: 0px;">
+							<input type="text" class="form-control input-lg" name="query" required="required" placeholder="Type or paste link here" id="query" value="{{ query }}">
+						</div>
+						<div class="col-xs-2" style="padding-left: 0px; padding-right: 0px;">
+							<input type="submit" class="btn btn-lg btn-block btn-success" value="GO!">
+						</div>
+					</div>
+				</form>
+
+			</div>
+		</div>
+
+	</div>
 
 	{% from 'components/result_box.html' import result_box with context %}
 
@@ -20,7 +45,7 @@
 			<div class="row">
 				<div class="card-deck">
 				{% for res in results %}
-				<div class="col-sm-3 features-box wow fadeInLeft">
+				<div class="col-sm-3 features-box wow">
 					{{ result_box(res) }}
 				</div>
 				{% endfor %}
@@ -50,13 +75,20 @@
 							</div>
 						</div>
 					</form>
+					
+				
 
-					<!-- <div class="description">
+					<div class="description">
 						<p class="medium-paragraph">
-							This is a free "search box / form / bar" made with the Bootstrap framework.
-							Download it on <a href="http://azmind.com">AZMIND</a> and enjoy!
+							Using text for your query isn't enough? <br> Try out the image search and other advanced functionalities. GL.
 						</p>
-					</div> -->
+						{% for i in range(10) %}
+							<!-- <button type="button" class="btn btn-primary">
+								Profile <span class="badge badge-light">9</span>
+								<span class="sr-only">unread messages</span>
+							</button> -->
+						{% endfor %}
+					</div>
 
 				</div>
 			</div>
