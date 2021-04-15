@@ -1,0 +1,11 @@
+click==7.1.2
+dataclasses==0.8
+fastapi==0.63.0
+Flask==1.1.2
+itsdangerous==1.1.0
+Jinja2==2.11.3
+MarkupSafe==1.1.1
+pydantic==1.8.1
+starlette==0.13.6
+typing-extensions==3.7.4.3
+Werkzeug==1.0.1
