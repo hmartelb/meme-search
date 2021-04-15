@@ -1,0 +1,120 @@
+{% extends "layout.html" %}
+
+{% block head %}
+  {{ super() }}
+{% endblock %}
+
+{% block content %}
+	<!-- Top content -->
+	<div class="top-content">
+		<div class="container">
+			
+			<div class="row">
+				<div class="col-sm-12 text wow fadeInLeft">
+					<img src="{{ url_for('static', filename='img/doge.png') }}" style="max-width: 200px;">
+					<h1><strong>Search</strong> your meme</h1>
+						
+					<form class="form" action="{{ url_for('index') }}">
+						<div class="row">
+							<div class="col-sm-10" style="padding-left: 0px; padding-right: 0px;">
+								<input type="text" class="form-control input-lg" name="query" placeholder="Type or paste link here" id="query">
+							</div>
+							<div class="col-sm-2" style="padding-left: 0px; padding-right: 0px;">
+								<input type="submit" class="btn btn-lg btn-block btn-success" value="Go!">
+							</div>
+						</div>
+					</form>
+
+					<div class="description">
+						<p class="medium-paragraph">
+						 This is a free "search box / form / bar" made with the Bootstrap framework.
+						 Download it on <a href="http://azmind.com">AZMIND</a> and enjoy!
+						</p>
+					</div>
+					
+				</div>
+			</div>
+			
+		</div>
+	</div>
+	{% set display_popular = False %}
+	{% if display_popular %}
+	
+	<!-- Features -->
+	<div class="features-container section-container">
+		<div class="container">
+			
+			<div class="row">
+				<div class="col-sm-12 features section-description wow fadeIn">
+					<h2>Popular today</h2>
+					<div class="divider-1 wow fadeInUp"><span></span></div>
+				</div>
+			</div>
+			
+			<div class="row">
+				<div class="col-sm-6 features-box wow fadeInLeft">
+					<div class="row">
+						<div class="col-sm-3 features-box-icon">
+							<i class="fa fa-cloud"></i>
+						</div>
+						<div class="col-sm-9">
+							<h3>ut wisi enim ad minim</h3>
+							<p>
+								Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor incididunt ut labore et.
+								Ut wisi enim ad minim veniam, quis nostrud.
+							</p>
+						</div>
+					</div>
+				</div>
+				<div class="col-sm-6 features-box wow fadeInLeft">
+					<div class="row">
+						<div class="col-sm-3 features-box-icon">
+							<i class="fa fa-instagram"></i>
+						</div>
+						<div class="col-sm-9">
+							<h3>sed do eiusmod tempor</h3>
+							<p>
+								Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor incididunt ut labore et.
+								Ut wisi enim ad minim veniam, quis nostrud.
+							</p>
+						</div>
+					</div>
+				</div>
+			</div>
+			
+			<div class="row">
+				<div class="col-sm-6 features-box wow fadeInLeft">
+					<div class="row">
+						<div class="col-sm-3 features-box-icon">
+							<i class="fa fa-paperclip"></i>
+						</div>
+						<div class="col-sm-9">
+							<h3>quis nostrud exerci tat</h3>
+							<p>
+								Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor incididunt ut labore et.
+								Ut wisi enim ad minim veniam, quis nostrud.
+							</p>
+						</div>
+					</div>
+				</div>
+				<div class="col-sm-6 features-box wow fadeInLeft">
+					<div class="row">
+						<div class="col-sm-3 features-box-icon">
+							<i class="fa fa-twitter"></i>
+						</div>
+						<div class="col-sm-9">
+							<h3>minim veniam quis nostrud</h3>
+							<p>
+								Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor incididunt ut labore et.
+								Ut wisi enim ad minim veniam, quis nostrud.
+							</p>
+						</div>
+					</div>
+				</div>
+			</div>
+
+		</div>
+	</div>
+
+	{% endif %}
+{% endblock %}

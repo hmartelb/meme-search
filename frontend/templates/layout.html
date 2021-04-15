@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="en">
+
+    <head>
+        {% block head %}
+        <meta charset="utf-8">
+        <meta http-equiv="X-UA-Compatible" content="IE=edge">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+
+        <title>{{ title }}</title>
+
+        <!-- CSS -->
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:100,100i,300,300i,500,500i') }}">
+        <link rel="stylesheet" href="{{ url_for('static', filename='/bootstrap/css/bootstrap.min.css') }}">
+        <link rel="stylesheet" href="{{ url_for('static', filename='/font-awesome/css/font-awesome.min.css') }}">
+        <link rel="stylesheet" href="{{ url_for('static', filename='/css/animate.css') }}">
+        <link rel="stylesheet" href="{{ url_for('static', filename='/css/style.css') }}">
+
+        <!-- HTML5 Shim and Respond.js IE8 support of HTML5 elements and media queries -->
+        <!-- WARNING: Respond.js doesn't work if you view the page via file:// -->
+        <!--[if lt IE 9]>
+            <script src="https://oss.maxcdn.com/libs/html5shiv/3.7.0/html5shiv.js"></script>
+            <script src="https://oss.maxcdn.com/libs/respond.js/1.4.2/respond.min.js"></script>
+        <![endif]-->
+
+        <!-- Favicon and touch icons -->
+        <!-- <link rel="shortcut icon" href="{{ url_for('static', filename='/ico/favicon.png') }}">
+        <link rel="apple-touch-icon-precomposed" sizes="144x144" href="{{ url_for('static', filename='/ico/apple-touch-icon-144-precomposed.png') }}">
+        <link rel="apple-touch-icon-precomposed" sizes="114x114" href="{{ url_for('static', filename='/ico/apple-touch-icon-114-precomposed.png') }}">
+        <link rel="apple-touch-icon-precomposed" sizes="72x72" href="{{ url_for('static', filename='/ico/apple-touch-icon-72-precomposed.png') }}">
+        <link rel="apple-touch-icon-precomposed" href="{{ url_for('static', filename='/ico/apple-touch-icon-57-precomposed.png') }}"> -->
+        <link rel="shortcut icon" href="{{ url_for('static', filename='/ico/favicon.ico') }}">
+        <link rel="apple-touch-icon" sizes="180x180" href="{{ url_for('static', filename='ico/apple-touch-icon.png') }}">
+        <link rel="icon" type="image/png" sizes="32x32" href="{{ url_for('static', filename='ico/favicon-32x32.png') }}">
+        <link rel="icon" type="image/png" sizes="16x16" href="{{ url_for('static', filename='ico/favicon-16x16.png') }}">
+        <!-- <link rel="manifest" href="{{ url_for('static', filename='ico/site.webmanifest') }}"> -->
+        {% endblock %}
+    </head>
+
+    <body>
+		
+		{% include 'components/navbar.html' %}
+
+        <div id="content">
+            {% block content %}
+            {% endblock %}
+        </div>
+        {% include 'components/footer.html' %}
+
+        <!-- Javascript -->
+        <script src="{{ url_for('static', filename='/js/jquery-1.11.1.min.js') }}"></script>
+        <script src="{{ url_for('static', filename='/bootstrap/js/bootstrap.min.js') }}"></script>
+        <script src="{{ url_for('static', filename='/js/jquery.backstretch.min.js') }}"></script>
+        <script src="{{ url_for('static', filename='/js/wow.min.js') }}"></script>
+        <!-- <script src="{{ url_for('static', filename='/js/scripts.js') }}"></script> -->
+
+        <script>
+            $(document).ready(function() {
+                $('.top-content').backstretch("{{ url_for('static', filename='/img/2.jpg') }}");
+                new WOW().init();
+            });
+        </script>
+        
+        <!--[if lt IE 10]>
+            <script src="assets/js/placeholder.js"></script>
+        <![endif]-->
+        
+        {% block scripts %}
+        {% endblock %}
+
+    </body>
+
+</html>
