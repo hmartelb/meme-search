@@ -64,6 +64,8 @@ class ImageExtractor():
             # torchvision.transforms.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225]),
         ])
 
+        self.cos_sim = torch.nn.CosineSimilarity(dim=1, eps=1e-6)
+
     def to_vec(self, filename):
         '''
         https://stackoverflow.com/questions/63552044/how-to-extract-feature-vector-from-single-image-in-pytorch
@@ -84,6 +86,10 @@ class ImageExtractor():
         h.remove()
         return img_embedding
 
+    def cosine_similarity(self, vec1, vec2):
+        score = self.cos_sim(vec1.unsqueeze(0), vec2.unsqueeze(0))
+        return score
+
 
 if __name__ == '__main__':
     ap = argparse.ArgumentParser()
@@ -96,6 +102,8 @@ if __name__ == '__main__':
     te = TextExtractor()
     ie = ImageExtractor()
 
+    img_vectors = []
+
     for f in os.listdir(args.images_path):
         filename = os.path.join(args.images_path, f)
         print()
@@ -105,6 +113,20 @@ if __name__ == '__main__':
         # text = te.precise_ocr(filename)
         # print(text)
         img_embedding = ie.to_vec(filename)
+        img_vectors.append(img_embedding)
+
         print(img_embedding.cpu().numpy().shape)
         print(f"Inference took: {time.time()-start} s.")
         print()
+
+    sim_matrix = np.zeros([len(img_vectors), len(img_vectors)])
+    for i in range(len(img_vectors)):
+        for j in range(i, len(img_vectors)):
+            sim_matrix[i,j] = ie.cosine_similarity(img_vectors[i], img_vectors[j])
+
+    # print("Cosine similarity matrix:")
+    # print(sim_matrix)
+
+    import matplotlib.pyplot as plt
+    plt.matshow(sim_matrix)
+    plt.show()
