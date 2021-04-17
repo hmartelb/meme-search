@@ -21,8 +21,9 @@ class TextExtractor():
         
     def fast_ocr(self, filename):
         '''
+        [CPU only]
         Uses Pytesseract and OpenCV to extract text from the image. 
-        Faster but not as accurate as the precise_ocr() method. CPU only
+        Faster but not as accurate as the precise_ocr() method. 
         '''
         image = np.array(Image.open(filename))
         
@@ -38,8 +39,9 @@ class TextExtractor():
 
     def precise_ocr(self, filename):
         '''
+        [GPU support]
         Uses EasyOCR (PyTorch-based) to extract text from the image.
-        Slower than the fast_ocr() method but more accurate. GPU support
+        Slower than the fast_ocr() method but more accurate. 
         '''
         text = self.reader.readtext(filename, detail=0)
         text = (' '.join(text)).split()
