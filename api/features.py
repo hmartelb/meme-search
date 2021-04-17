@@ -2,13 +2,15 @@ import argparse
 import os
 import time
 
-from PIL import Image
-import numpy as np
-import matplotlib.pyplot as plt
 import cv2
-import pytesseract
-
 import easyocr
+import matplotlib.pyplot as plt
+import numpy as np
+import pytesseract
+import torch
+import torchvision
+from PIL import Image
+
 
 class TextExtractor():
     def __init__(self, 
@@ -25,7 +27,7 @@ class TextExtractor():
         Uses Pytesseract and OpenCV to extract text from the image. 
         Faster but not as accurate as the precise_ocr() method. 
         '''
-        image = np.array(Image.open(filename))
+        image = np.array(Image.open(filename).convert('RGB'))
         
         # OpenCV preprocessing inspired from:
         # https://towardsdatascience.com/extract-text-from-memes-with-python-opencv-tesseract-ocr-63c2ccd72b69
@@ -48,6 +50,41 @@ class TextExtractor():
         return text
 
 
+class ImageExtractor():
+    def __init__(self):
+        # Load the pretrained model
+        self.model = torchvision.models.resnet18(pretrained=True)
+        self.model.eval()
+        self.layer = self.model._modules.get('avgpool')
+        
+        self.transforms = torchvision.transforms.Compose([
+            torchvision.transforms.Resize(256),
+            torchvision.transforms.CenterCrop(224),
+            torchvision.transforms.ToTensor(),
+            # torchvision.transforms.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225]),
+        ])
+
+    def to_vec(self, filename):
+        '''
+        https://stackoverflow.com/questions/63552044/how-to-extract-feature-vector-from-single-image-in-pytorch
+        '''
+        img_embedding = torch.zeros(512)
+        image = self.transforms(Image.open(filename).convert('RGB'))
+
+        # Define a function that will copy the output of a layer
+        def copy_data(m, i, o):
+            img_embedding.copy_(o.flatten())
+        # Attach that function to our selected layer
+        h = self.layer.register_forward_hook(copy_data)
+
+        with torch.no_grad():                               
+            self.model(image.unsqueeze(0))
+
+        # Detach our copy function from the layer
+        h.remove()
+        return img_embedding
+
+
 if __name__ == '__main__':
     ap = argparse.ArgumentParser()
     ap.add_argument('-i', '--images_path', required=True)
@@ -57,6 +94,7 @@ if __name__ == '__main__':
     os.environ['CUDA_VISIBLE_DEVICES'] = args.gpu
 
     te = TextExtractor()
+    ie = ImageExtractor()
 
     for f in os.listdir(args.images_path):
         filename = os.path.join(args.images_path, f)
@@ -64,7 +102,9 @@ if __name__ == '__main__':
         print(filename)
 
         start = time.time()
-        text = te.precise_ocr(filename)
-        print(text)
+        # text = te.precise_ocr(filename)
+        # print(text)
+        img_embedding = ie.to_vec(filename)
+        print(img_embedding.cpu().numpy().shape)
         print(f"Inference took: {time.time()-start} s.")
         print()
