@@ -10,15 +10,17 @@ import pytesseract
 import torch
 import torchvision
 from PIL import Image
-
+from sentence_transformers import SentenceTransformer
+import string
 
 class TextExtractor():
     def __init__(self, 
-        languages=['en', 'ch_sim'],
+        languages=['en'],#, 'ch_sim'],
         pytesseract_path = r'C:\Program Files\Tesseract-OCR\tesseract.exe'
     ):
         self.languages = languages
         self.reader = easyocr.Reader(languages)
+        self.sentence_transformer = SentenceTransformer('paraphrase-distilroberta-base-v1') # stsb-distilbert-base, bert-base-nli-mean-tokens
         pytesseract.pytesseract.tesseract_cmd = pytesseract_path
         
     def fast_ocr(self, filename):
@@ -36,7 +38,7 @@ class TextExtractor():
         _, image = cv2.threshold(image, 240, 255, 1) 
         
         text = pytesseract.image_to_string(image)
-        text = list(map(str.lower, text.split()))
+        # text = list(map(str.lower, text.split()))
         return text
 
     def precise_ocr(self, filename):
@@ -46,8 +48,21 @@ class TextExtractor():
         Slower than the fast_ocr() method but more accurate. 
         '''
         text = self.reader.readtext(filename, detail=0)
-        text = (' '.join(text)).split()
+        # text = list(map(str.lower,' '.join(text).split())
         return text
+
+    def to_vec(self, filename, method='precise', to_numpy=False):
+        '''
+        Use the sentence transformers package to get sentence embeddings.
+        https://github.com/UKPLab/sentence-transformers
+        '''
+        ocr_fn = self.fast_ocr if method == 'fast' else self.precise_ocr
+        text = ocr_fn(filename)
+
+        sentence_embedding = self.sentence_transformer.encode([text])
+        if to_numpy:
+            return sentence_embedding
+        return torch.from_numpy(sentence_embedding)
 
 
 class ImageExtractor():
@@ -69,6 +84,9 @@ class ImageExtractor():
     def to_vec(self, filename):
         '''
         https://stackoverflow.com/questions/63552044/how-to-extract-feature-vector-from-single-image-in-pytorch
+
+        TODO: Consider this approach
+        https://github.com/erezposner/Fast_Dense_Feature_Extraction
         '''
         img_embedding = torch.zeros(512)
         image = self.transforms(Image.open(filename).convert('RGB'))
@@ -84,12 +102,21 @@ class ImageExtractor():
 
         # Detach our copy function from the layer
         h.remove()
-        return img_embedding
+        return img_embedding.unsqueeze(0)
 
-    def cosine_similarity(self, vec1, vec2):
-        score = self.cos_sim(vec1.unsqueeze(0), vec2.unsqueeze(0))
+    def cosine_similarity(self, vec1, vec2, to_numpy=False):
+        score = self.cos_sim(vec1, vec2)
+        if to_numpy:
+            return np.asscalar(score.cpu().numpy())
         return score
 
+
+def similarity_matrix(vectors):
+    M = np.zeros([len(vectors), len(vectors)])
+    for i in range(len(vectors)):
+        for j in range(i, len(vectors)):
+            M[i,j] = ie.cosine_similarity(vectors[i], vectors[j], to_numpy=True)
+    return M
 
 if __name__ == '__main__':
     ap = argparse.ArgumentParser()
@@ -102,6 +129,7 @@ if __name__ == '__main__':
     te = TextExtractor()
     ie = ImageExtractor()
 
+    text_vectors = []
     img_vectors = []
 
     for f in os.listdir(args.images_path):
@@ -110,23 +138,33 @@ if __name__ == '__main__':
         print(filename)
 
         start = time.time()
-        # text = te.precise_ocr(filename)
-        # print(text)
+    
+        text_embedding = te.to_vec(filename)
+        text_vectors.append(text_embedding)
+
         img_embedding = ie.to_vec(filename)
         img_vectors.append(img_embedding)
 
-        print(img_embedding.cpu().numpy().shape)
         print(f"Inference took: {time.time()-start} s.")
         print()
 
-    sim_matrix = np.zeros([len(img_vectors), len(img_vectors)])
-    for i in range(len(img_vectors)):
-        for j in range(i, len(img_vectors)):
-            sim_matrix[i,j] = ie.cosine_similarity(img_vectors[i], img_vectors[j])
-
-    # print("Cosine similarity matrix:")
-    # print(sim_matrix)
-
     import matplotlib.pyplot as plt
-    plt.matshow(sim_matrix)
+    M_text = similarity_matrix(text_vectors)
+    
+    plt.matshow(M_text)
+    plt.show()
+
+    M_img = similarity_matrix(img_vectors)
+
+    plt.matshow(M_img)
+    plt.show()
+
+    fusion_vectors = []
+    for text, img in zip(text_vectors, img_vectors):
+        fusion = torch.cat((text, img), 1)
+        fusion_vectors.append(fusion)
+
+    M_fusion = similarity_matrix(fusion_vectors)
+
+    plt.matshow(M_fusion)
     plt.show()
