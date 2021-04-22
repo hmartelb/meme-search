@@ -138,6 +138,9 @@ if __name__ == '__main__':
         print()
         print(filename)
 
+        if not filename.endswith('.jpg'):
+            continue
+
         start = time.time()
     
         text_embedding = te.to_vec(filename)

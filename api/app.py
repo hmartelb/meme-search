@@ -1,9 +1,11 @@
 import os
+import numpy as np
 import pandas as pd
 from fastapi import FastAPI, Request
 
 from features import TextExtractor
 from scipy.spatial import distance
+# import scipy
 
 app = FastAPI()
 
@@ -13,7 +15,7 @@ search_index = pd.read_pickle(INDEX_FILENAME)
 te = TextExtractor()
 
 @app.get('/')
-def index(query: str, count: int = 20, mode: str = 'both'):
+def index(query: str, count: int = 20, mode: str = 'both', threshold: float = 1.0):
 
     if mode == 'both': search_column = 'fusion_text_embedding'
     if mode == 'title': search_column = 'title_embedding'
@@ -23,12 +25,16 @@ def index(query: str, count: int = 20, mode: str = 'both'):
         # Calculate the embedding of the query
         query_embedding = te.to_vec(text=query, to_numpy=True)
 
+        # query_embedding = np.expand_dims(query_embedding, axis=0)
+
         # Compare against database
-        similarity_scores = [(idx, distance.cosine(query_embedding, row[search_column])) for idx, row in search_index.iterrows()]
-        
+        distance_fn = distance.cosine
+        similarity_scores = [(idx, distance_fn(query_embedding, row[search_column])) for idx, row in search_index.iterrows()]
+
         # Get Top K
         similarity_scores = sorted(similarity_scores, key=lambda x: x[1])
         similarity_scores = similarity_scores[0:count]
+        similarity_scores = filter(lambda x: x[1] <= threshold, similarity_scores)
 
         results = []
         for ss in similarity_scores:
