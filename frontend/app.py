@@ -31,6 +31,8 @@ def get_default_results():
 def index():
     results = []
     query = request.args.get('query', None)
+    count = request.args.get('count', 20)
+    mode = request.args.get('mode', 'both')
     if query is not None:
         # Make API calls here
         if check_url_in_query(query):
@@ -39,7 +41,13 @@ def index():
         else:
             # Search using text input
             print("Normal text:", query)
-        results = get_default_results()
+
+        response = requests.get(
+            app.config['API_ENDPOINT'], 
+            params={'query': query, 'count': count, 'mode': mode}
+        )
+        if response.status_code == 200:
+            results = response.json()['results']
 
     return render_template('pages/index.html', title='Meme search', query=query, results=results)
 

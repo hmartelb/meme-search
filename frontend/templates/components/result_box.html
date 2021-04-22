@@ -1,7 +1,7 @@
 {% macro result_box(result) -%}
 	<div class="card">
-		<a href="{{ url_for('index') }}">
-			<img class="card-img-top" src="{{ result.url }}" alt="{{ result.name }}">
+		<a href="{{ result.url }}" target="_blank">
+			<img width="200" height="200" class="card-img-top" src="{{ result.url }}" alt="{{ result.name }}">
 		</a>
 			<div class="card-body">
 				<a href="{{ url_for('index') }}">
