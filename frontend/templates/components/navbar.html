@@ -2,12 +2,12 @@
 <nav class="navbar navbar-inverse" role="navigation">
     <div class="container">
         <div class="navbar-header">
-            <!-- <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#top-navbar-1">
+            <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#top-navbar-1">
                 <span class="sr-only">Toggle navigation</span>
                 <span class="icon-bar"></span>
                 <span class="icon-bar"></span>
                 <span class="icon-bar"></span>
-            </button> -->
+            </button>
             <a class="navbar-brand" href="{{ url_for('index') }}">
                 <h3 style="margin-top: -4px;">Meme search</h3>
             </a>
@@ -23,8 +23,11 @@
                 </div>
             </form>
             <ul class="nav navbar-nav navbar-right navbar-menu-items wow fadeIn">
-                {% set nav_items = [] %}
-
+                {% set nav_items = [
+                    {'name': 'Popular', 'url': 'index'},
+                    {'name': 'New', 'url': 'index'},
+                    {'name': 'Templates', 'url': 'index'},
+                ] %}
                 {% for item in nav_items %}
                     <li><a href="{{ url_for(item.url) }}" class="nav-link">{{ item.name }}</a></li>
                 {% endfor %}

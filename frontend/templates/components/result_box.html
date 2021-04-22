@@ -1,13 +1,15 @@
 {% macro result_box(result) -%}
-	<div class="card">
+	<div class="card border-success mb-3" style="height: 350px;">
 		<a href="{{ result.url }}" target="_blank">
 			<img width="200" height="200" class="card-img-top" src="{{ result.url }}" alt="{{ result.name }}">
 		</a>
-			<div class="card-body">
-				<a href="{{ url_for('index') }}">
-					<h4 class="card-title">{{ result.name }}</h4>
-				</a>
-			<button type="button" class="btn btn-light">
+		<div class="card-body">
+			<a href="{{ result.url }}" target="_blank">
+				<h4 class="card-title">{{ result.name }}</h4>
+			</a>
+			<p>({{ '%0.4f'| format(result.score|float) }})</p>
+			{#
+			<button type="button" class="btn btn-primary">
 				<!-- <i class="fas fa-download"></i> -->
 				Download
 			</button>
@@ -15,9 +17,10 @@
 				<!-- <i class="far fa-thumbs-up"></i> -->
 				Like
 			</button>
-			</div>
-			<div class="card-footer">
+			#}
+		</div>
+			<!-- <div class="card-footer">
 				<small class="text-muted">Last updated 3 mins ago.</small>
-			</div>
+			</div> -->
 	</div>
 {%- endmacro %}

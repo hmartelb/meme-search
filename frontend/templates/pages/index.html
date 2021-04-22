@@ -16,7 +16,9 @@
 				<form class="form" method="GET" action="{{ url_for('index') }}">
 					<div class="row" style="margin-left: 0px; margin-right: 0px;">
 						<div class="col-xs-2" style="padding-left: 0px; padding-right: 0px;">
-							<img src="{{ url_for('static', filename='img/doge.png') }}" style="max-width: 40px; text-align: right;">
+							<a href="{{ url_for('index') }}">
+								<img src="{{ url_for('static', filename='img/doge.png') }}" style="max-width: 40px; text-align: right;">
+							</a>
 						</div>
 						<div class="col-xs-8" style="padding-left: 0px; padding-right: 0px;">
 							<input type="text" class="form-control input-lg" name="query" required="required" placeholder="Type or paste link here" id="query" value="{{ query }}">
@@ -45,7 +47,7 @@
 			<div class="row">
 				<div class="card-deck">
 				{% for res in results %}
-				<div class="col-sm-3 features-box wow">
+				<div class="col-sm-3 features-box wow fadeInUp">
 					{{ result_box(res) }}
 				</div>
 				{% endfor %}
