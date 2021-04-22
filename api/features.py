@@ -51,18 +51,19 @@ class TextExtractor():
         # text = list(map(str.lower,' '.join(text).split())
         return text
 
-    def to_vec(self, filename, method='precise', to_numpy=False):
+    def to_vec(self, filename=None, text=None, method='precise', to_numpy=False):
         '''
         Use the sentence transformers package to get sentence embeddings.
         https://github.com/UKPLab/sentence-transformers
         '''
-        ocr_fn = self.fast_ocr if method == 'fast' else self.precise_ocr
-        text = ocr_fn(filename)
+        if filename is not None:
+            ocr_fn = self.fast_ocr if method == 'fast' else self.precise_ocr
+            text = ocr_fn(filename)
 
         sentence_embedding = self.sentence_transformer.encode([text])
         if to_numpy:
-            return sentence_embedding
-        return torch.from_numpy(sentence_embedding)
+            return sentence_embedding[0]
+        return torch.squeeze(torch.from_numpy(sentence_embedding))
 
 
 class ImageExtractor():
