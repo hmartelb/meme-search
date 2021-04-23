@@ -115,4 +115,5 @@ dmypy.json
 venv.bat
 
 api/images
+references/
 .vscode/settings.json
