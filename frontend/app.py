@@ -35,12 +35,13 @@ def index():
     mode = request.args.get('mode', 'both')
     if query is not None:
         # Make API calls here
-        if check_url_in_query(query):
-            # Retrieve image from url, extract features and search 
-            print("Is URL: ", query)
-        else:
-            # Search using text input
-            print("Normal text:", query)
+        # TODO: Handle link submissions
+        # if check_url_in_query(query):
+        #     # Retrieve image from url, extract features and search 
+        #     print("Is URL: ", query)
+        # else:
+        #     # Search using text input
+        #     print("Normal text:", query)
 
         response = requests.get(
             app.config['API_ENDPOINT'], 
