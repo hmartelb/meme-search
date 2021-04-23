@@ -7,23 +7,49 @@ from features import TextExtractor
 from scipy.spatial import distance
 # import scipy
 
+import string
+import gensim
+
 app = FastAPI()
 
-INDEX_FILENAME = os.path.join('images', 'index.df')
+INDEX_FILENAME = os.path.join('images', 'index_4.df')
 search_index = pd.read_pickle(INDEX_FILENAME)
+
+print("Loading pretrained embeddings")
+pretrained_emb_filename = os.path.join('pretrained', 'glove.6B.300d_converted.txt')
+model = gensim.models.KeyedVectors.load_word2vec_format(pretrained_emb_filename)
+print("Model initialized")
+
+def sentence_vector(sentence, model, vector_dim=300):
+    if type(sentence) == str:
+        sentence = sentence.lower().strip(string.punctuation).split(' ')
+
+    vec = np.zeros(vector_dim)
+    # num_words = 0
+    for word in sentence:
+        try:
+            vec = np.add(vec, model[word])
+            # num_words += 1
+        except:
+            pass
+    return vec / np.sqrt(vec.dot(vec))
 
 te = TextExtractor()
 
 @app.get('/')
 def index(query: str, count: int = 20, mode: str = 'both', threshold: float = 1.0):
 
-    if mode == 'both': search_column = 'fusion_text_embedding'
-    if mode == 'title': search_column = 'title_embedding'
-    if mode == 'content': search_column = 'ocr_embedding'
+    # if mode == 'both': search_column = 'fusion_text_embedding'
+    # if mode == 'title': search_column = 'title_embedding'
+    # if mode == 'content': search_column = 'ocr_embedding'
+    if mode == 'both': search_column = 'fusion_text_glove'
+    if mode == 'title': search_column = 'title_glove'
+    if mode == 'content': search_column = 'ocr_glove'
 
     if query:
         # Calculate the embedding of the query
-        query_embedding = te.to_vec(text=query, to_numpy=True)
+        # query_embedding = te.to_vec(text=query, to_numpy=True)
+        query_embedding = sentence_vector(query, model, vector_dim=300)
 
         # query_embedding = np.expand_dims(query_embedding, axis=0)
 

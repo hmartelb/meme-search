@@ -117,3 +117,5 @@ venv.bat
 api/images
 references/
 .vscode/settings.json
+api/pretrained/glove.6B.300d.txt
+api/pretrained/glove.6B.300d_converted.txt

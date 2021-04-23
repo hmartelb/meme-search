@@ -20,7 +20,7 @@ class TextExtractor():
     ):
         self.languages = languages
         self.reader = easyocr.Reader(languages)
-        self.sentence_transformer = SentenceTransformer('paraphrase-distilroberta-base-v1') # stsb-distilbert-base, bert-base-nli-mean-tokens
+        self.sentence_transformer = SentenceTransformer('bert-base-nli-mean-tokens') # stsb-distilbert-base, bert-base-nli-mean-tokens, paraphrase-distilroberta-base-v1
         pytesseract.pytesseract.tesseract_cmd = pytesseract_path
         
     def fast_ocr(self, filename):
@@ -51,7 +51,7 @@ class TextExtractor():
         # text = list(map(str.lower,' '.join(text).split())
         return text
 
-    def to_vec(self, filename=None, text=None, method='precise', to_numpy=False):
+    def to_vec(self, filename=None, text=None, method='precise', to_numpy=False, return_text=False):
         '''
         Use the sentence transformers package to get sentence embeddings.
         https://github.com/UKPLab/sentence-transformers
@@ -60,10 +60,22 @@ class TextExtractor():
             ocr_fn = self.fast_ocr if method == 'fast' else self.precise_ocr
             text = ocr_fn(filename)
 
-        sentence_embedding = self.sentence_transformer.encode([text])
-        if to_numpy:
-            return sentence_embedding[0]
-        return torch.squeeze(torch.from_numpy(sentence_embedding))
+        text = ' '.join(text)
+        if type(text) == str:
+            text = [text]
+
+        sentence_embedding = self.sentence_transformer.encode(text)
+        if sentence_embedding.ndim > 1:
+            sentence_embedding = np.mean(sentence_embedding, axis=0)
+        
+        # By default, the returned value is a numpy array. Convert to tensor
+        if not to_numpy:
+            sentence_embedding = torch.squeeze(torch.from_numpy(sentence_embedding))
+        
+        if return_text:
+            # return sentence_embedding[0], text
+            return sentence_embedding, text
+        return sentence_embedding
 
 
 class ImageExtractor():
@@ -80,9 +92,9 @@ class ImageExtractor():
             # torchvision.transforms.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225]),
         ])
 
-        self.cos_sim = torch.nn.CosineSimilarity(dim=1, eps=1e-6)
+        self.cos_sim = torch.nn.CosineSimilarity(dim=-1, eps=1e-6)
 
-    def to_vec(self, filename):
+    def to_vec(self, filename, to_numpy=False):
         '''
         https://stackoverflow.com/questions/63552044/how-to-extract-feature-vector-from-single-image-in-pytorch
 
@@ -103,7 +115,10 @@ class ImageExtractor():
 
         # Detach our copy function from the layer
         h.remove()
-        return img_embedding.unsqueeze(0)
+        # img_embedding = img_embedding.unsqueeze(0)
+        if to_numpy:
+            img_embedding = img_embedding.cpu().numpy()
+        return img_embedding
 
     def cosine_similarity(self, vec1, vec2, to_numpy=False):
         score = self.cos_sim(vec1, vec2)
@@ -128,6 +143,14 @@ if __name__ == '__main__':
     os.environ['CUDA_VISIBLE_DEVICES'] = args.gpu
 
     te = TextExtractor()
+
+    # image_name = os.path.join('images','memes','memes_hd','6tehbc.png')
+    # emb, text = te.to_vec(filename=image_name, to_numpy=True, return_text=True)
+
+    # print(text)
+    # print(emb.shape)
+
+    # exit()
     ie = ImageExtractor()
 
     text_vectors = []
