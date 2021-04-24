@@ -22,8 +22,6 @@ search_index = None
 @app.get('/initialize')
 @app.on_event("startup")
 def initialize():
-    print("Initializing")
-
     reload_index()
     reload_sentence_vectorizer()
     
@@ -33,10 +31,12 @@ def reload_sentence_vectorizer():
     try:
         sv.load(EMBEDDINGS_FILENAME)
     except:
-        print('Failed to load vectors')
+        logger = logging.getLogger('uvicorn.error')
+        logger.error('Failed to load vectors')
         return 'Failed to load vectors'
-    
-    print(f'Success loading vectors: {EMBEDDINGS_FILENAME}')
+
+    logger = logging.getLogger('uvicorn.info')
+    logger.info(f'Success loading vectors: {EMBEDDINGS_FILENAME}')
     return 'Success loading vectors'
 
 @app.get('/reload_index')
@@ -45,10 +45,12 @@ def reload_index():
     try:
         search_index = pd.read_pickle(INDEX_FILENAME)
     except:
-        print('Failed to load index')
+        logger = logging.getLogger('uvicorn.error')
+        logger.error('Failed to load index')
         return 'Failed to load index'
 
-    print(f'Success loading index: {INDEX_FILENAME}')
+    logger = logging.getLogger('uvicorn.info')
+    logger.info(f'Success loading index: {INDEX_FILENAME}')
     return 'Success loading index'
 
 @app.get('/')
@@ -85,25 +87,15 @@ def index(query: str, count: int = 20, mode: str = 'both', threshold: float = 1.
 
 if __name__ == "__main__":
     import argparse
-
     import uvicorn
 
     ap = argparse.ArgumentParser()
     ap.add_argument('--port', type=int, default=10000)
-    ap.add_argument('--gpu', default='0')
-    # ap.add_argument('--debug')
+    ap.add_argument('--gpu', default='-1')
     args = ap.parse_args()
     
     # Set GPU
     os.environ['CUDA_VISIBLE_DEVICES'] = args.gpu
 
-    uvicorn.run(app, host="0.0.0.0", port=args.port, log_level="info")#, reload=True, debug=True)
-    # dev = 1
-    # if dev==0:
-    #     #use this one
-    #     uvicorn.run(app, host="127.0.0.1", port=5000, log_level="info")
-    # if dev == 1:
-    #     #or this one
-    #     uvicorn.run(app, host="127.0.0.1", port=5000, log_level="info", reload=True, debug=True)
-    # if dev == 2:
-    #     uvicorn.run(app, host="127.0.0.1", port=5000, log_level="info", workers=2)
+    # Launch app
+    uvicorn.run(app, host="0.0.0.0", port=args.port, log_level="info")
