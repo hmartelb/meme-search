@@ -1,5 +1,7 @@
 import argparse
 import os
+import pickle
+import string
 import time
 
 import cv2
@@ -11,7 +13,43 @@ import torch
 import torchvision
 from PIL import Image
 from sentence_transformers import SentenceTransformer
-import string
+
+
+class SentenceVectorizer():
+    def __init__(self, filename=None, dim=0):
+        self.dim = dim
+        self.word2vec = {}
+
+        if filename is not None:
+            self.load(filename)
+
+    def load(self, filename):
+        with open(filename, 'rb') as f:
+            self.word2vec = pickle.load(f)
+            self.dim = len(next(iter(self.word2vec.values())))
+
+    def encode(self, text):
+        '''
+        Sum the word vectors for each token in the sentence. Does not take order nor syntax into account, but it is very fast.
+        Inspired from this answer on stackoverflow:
+        https://stackoverflow.com/questions/30795944/how-can-a-sentence-or-a-document-be-converted-to-a-vector
+        '''
+        assert type(text) == str, "Wrong data type, text must be str"
+        text = self._tokenize(text)
+        vec = np.zeros(self.dim)
+        for word in text:
+            try:
+                vec = np.add(vec, self.word2vec[word])
+            except:
+                pass # Out of vocabulary (OOV)
+        vec /= np.sqrt(vec.dot(vec))
+        return vec
+
+    def _tokenize(self, text):
+        return text.lower()\
+            .strip(string.punctuation)\
+            .split(' ')
+
 
 class TextExtractor():
     def __init__(self, 
@@ -142,6 +180,8 @@ if __name__ == '__main__':
 
     os.environ['CUDA_VISIBLE_DEVICES'] = args.gpu
 
+    # sv = SentenceVectorizer(filename='pretrained\glove.6B.300d_dict.pickle')
+ 
     te = TextExtractor()
 
     # image_name = os.path.join('images','memes','memes_hd','6tehbc.png')

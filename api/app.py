@@ -1,59 +1,68 @@
+import logging
 import os
+import pickle
+import string
+
 import numpy as np
 import pandas as pd
 from fastapi import FastAPI, Request
-
-from features import TextExtractor
 from scipy.spatial import distance
-# import scipy
 
-import string
-import gensim
+# import scipy
+from config import *
+from features import SentenceVectorizer
 
 app = FastAPI()
+logger = logging.getLogger(__name__)
 
-INDEX_FILENAME = os.path.join('images', 'index_4.df')
-search_index = pd.read_pickle(INDEX_FILENAME)
+varables = {}
+sv = SentenceVectorizer()
+search_index = None
 
-print("Loading pretrained embeddings")
-pretrained_emb_filename = os.path.join('pretrained', 'glove.6B.300d_converted.txt')
-model = gensim.models.KeyedVectors.load_word2vec_format(pretrained_emb_filename)
-print("Model initialized")
+@app.get('/initialize')
+@app.on_event("startup")
+def initialize():
+    print("Initializing")
 
-def sentence_vector(sentence, model, vector_dim=300):
-    if type(sentence) == str:
-        sentence = sentence.lower().strip(string.punctuation).split(' ')
+    reload_index()
+    reload_sentence_vectorizer()
+    
+@app.get('/reload_sentence_vectorizer')
+def reload_sentence_vectorizer():
+    global sv
+    try:
+        sv.load(EMBEDDINGS_FILENAME)
+    except:
+        print('Failed to load vectors')
+        return 'Failed to load vectors'
+    
+    print(f'Success loading vectors: {EMBEDDINGS_FILENAME}')
+    return 'Success loading vectors'
 
-    vec = np.zeros(vector_dim)
-    # num_words = 0
-    for word in sentence:
-        try:
-            vec = np.add(vec, model[word])
-            # num_words += 1
-        except:
-            pass
-    return vec / np.sqrt(vec.dot(vec))
+@app.get('/reload_index')
+def reload_index():
+    global search_index
+    try:
+        search_index = pd.read_pickle(INDEX_FILENAME)
+    except:
+        print('Failed to load index')
+        return 'Failed to load index'
 
-te = TextExtractor()
+    print(f'Success loading index: {INDEX_FILENAME}')
+    return 'Success loading index'
 
 @app.get('/')
 def index(query: str, count: int = 20, mode: str = 'both', threshold: float = 1.0):
 
-    # if mode == 'both': search_column = 'fusion_text_embedding'
-    # if mode == 'title': search_column = 'title_embedding'
-    # if mode == 'content': search_column = 'ocr_embedding'
     if mode == 'both': search_column = 'fusion_text_glove'
     if mode == 'title': search_column = 'title_glove'
     if mode == 'content': search_column = 'ocr_glove'
 
     if query:
         # Calculate the embedding of the query
-        # query_embedding = te.to_vec(text=query, to_numpy=True)
-        query_embedding = sentence_vector(query, model, vector_dim=300)
+        query_embedding = sv.encode(query)
 
-        # query_embedding = np.expand_dims(query_embedding, axis=0)
-
-        # Compare against database
+        # Compare against database, exhaustive search!
         distance_fn = distance.cosine
         similarity_scores = [(idx, distance_fn(query_embedding, row[search_column])) for idx, row in search_index.iterrows()]
 
