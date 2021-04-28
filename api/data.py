@@ -15,7 +15,7 @@ class TopResults():
         for el in elements:
             if len(self.top) < self.n or el[key] < self.last[key]:
                 self.top.append(el)
-                self.top = sorted(self.top, key=lambda x: x[key])                          
+                self.top = sorted(self.top, key=lambda x: x[key])    
                 while len(self.top) > self.n:
                     self.top.pop()
     @property
@@ -81,7 +81,10 @@ class SearchIndex():
         query_fn = self.efficient_search if method == 'efficient' else self.exhaustive_search
         return query_fn(vector, n)
 
-    def efficient_search(self, vector, n=20): # TODO: make this ñappa work!!
+    def efficient_search(self, vector, n=20): 
+        '''
+        https://gopalcdas.com/2017/05/24/construction-of-k-d-tree-and-using-it-for-nearest-neighbour-search/
+        '''
         def _branching_decision(ref, a, b):
             if a is None:
                 return b
@@ -141,8 +144,8 @@ class SearchIndex():
         return np.linalg.norm(a-b)
 
 if __name__ == '__main__':
-    from pprint import pprint
     import time
+
     # point_list = [(7, 2), (5, 4), (9, 6), (4, 7), (8, 1), (2, 3), (2,2)]
     # point_list = [list(p) for p in point_list]
     # print(point_list)
@@ -150,10 +153,9 @@ if __name__ == '__main__':
     # si = SearchIndex()
     # si.set_features(point_list)
     # si.build()
-    # pprint(si._index)
 
     index_name = os.path.join('api', 'images', 'index_4.df')
-    df = pd.read_pickle(index_name)['title_glove'].to_numpy()
+    df = pd.read_pickle(index_name)['ocr_glove'].to_numpy()
 
     print("Building index...")
     start = time.time()
@@ -161,17 +163,19 @@ if __name__ == '__main__':
     si.set_features(df)
     si.build()
     print(f"Build index took {np.round(time.time()-start, 4)} s")
-    # pprint(si._index)
+
+    N = 8
+    vec = df[0] # [1,1]# df[0]
 
     print("Performing queries...")
     start = time.time()
-    res_ex = si.query(df[0], n=10, method='exhaustive')
+    res_ex = si.query(vec, n=N, method='exhaustive')
     idx_ex = [r['idx'] for r in res_ex.top]
     print('\n', idx_ex)
     print(f"Exhaustive search took {np.round(time.time()-start, 4)} s")
 
     start = time.time()
-    res_ef = si.query(df[0], n=10, method='efficient')
+    res_ef = si.query(vec, n=N, method='efficient')
     idx_ef = [r['idx'] for r in res_ef.top]
     print('\n', idx_ef)
     print(f"Efficient search took {np.round(time.time()-start, 4)} s")
