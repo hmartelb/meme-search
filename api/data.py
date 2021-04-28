@@ -3,18 +3,12 @@ import pickle
 import pandas as pd
 import numpy as np
 
-# from collections import namedtuple
-
-# Feature = namedtuple('Feature', 'idx data')
-# Node = namedtuple('Node', 'point left right')
-
 class TopResults():
     def __init__(self, n=1):
         self.top = []
         self.n = n
     
     def insert(self, elements, key):
-        # print(f"[{len(self.top)}] Inserting: {elements['idx']}")
         if type(elements) != list:
             elements = [elements]
         
@@ -54,7 +48,6 @@ class SearchIndex():
         self._features = self._features.to_numpy()    # TODO: check this!
         
         self.set_features(self._features)
-        # self._features = [Feature(idx=i, data=f) for i,f in enumerate(self.features)]
 
     def set_features(self, features):
         self._features = [{'idx': i, 'data': f} for i,f in enumerate(features)]
@@ -160,21 +153,27 @@ if __name__ == '__main__':
     # pprint(si._index)
 
     index_name = os.path.join('api', 'images', 'index_4.df')
-    df = pd.read_pickle(index_name)['fusion_text_glove'].to_numpy()
+    df = pd.read_pickle(index_name)['title_glove'].to_numpy()
 
     print("Building index...")
+    start = time.time()
     si = SearchIndex()
     si.set_features(df)
     si.build()
+    print(f"Build index took {np.round(time.time()-start, 4)} s")
     # pprint(si._index)
 
     print("Performing queries...")
     start = time.time()
-    res_ex = si.query(df[0], n=4, method='exhaustive')
-    print([r['idx'] for r in res_ex.top])
-    print(f"Exhaustive search took {time.time()-start} s")
+    res_ex = si.query(df[0], n=10, method='exhaustive')
+    idx_ex = [r['idx'] for r in res_ex.top]
+    print('\n', idx_ex)
+    print(f"Exhaustive search took {np.round(time.time()-start, 4)} s")
 
     start = time.time()
-    res_ef = si.query(df[0], n=4, method='efficient')
-    print([r['idx'] for r in res_ef.top])
-    print(f"Efficient search took {time.time()-start} s")
+    res_ef = si.query(df[0], n=10, method='efficient')
+    idx_ef = [r['idx'] for r in res_ef.top]
+    print('\n', idx_ef)
+    print(f"Efficient search took {np.round(time.time()-start, 4)} s")
+
+    assert idx_ex == idx_ef, 'Search retured different results!'
