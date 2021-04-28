@@ -16,8 +16,9 @@ from sentence_transformers import SentenceTransformer
 
 
 class SentenceVectorizer():
-    def __init__(self, filename=None, dim=0):
+    def __init__(self, filename=None, dim=0, eps=1e-9):
         self.dim = dim
+        self.eps = eps
         self.word2vec = {}
 
         if filename is not None:
@@ -42,7 +43,7 @@ class SentenceVectorizer():
                 vec = np.add(vec, self.word2vec[word])
             except:
                 pass # Out of vocabulary (OOV)
-        vec /= np.sqrt(vec.dot(vec))
+        vec /= (np.sqrt(vec.dot(vec)) + self.eps)
         return vec
 
     def _tokenize(self, text):
