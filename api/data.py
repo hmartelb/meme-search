@@ -14,6 +14,7 @@ class TopResults():
         self.n = n
     
     def insert(self, elements, key):
+        # print(f"[{len(self.top)}] Inserting: {elements['idx']}")
         if type(elements) != list:
             elements = [elements]
         
@@ -114,23 +115,25 @@ class SearchIndex():
                 next_branch = root['right']
                 opposite_branch = root['left']
 
+            # Try to insert the current point in the top results
+            root['point']['distance'] = self.distance(vector, root['point']['data'])
+            results.insert(root['point'], key='distance')
+
             best = _branching_decision(
                 ref=vector,
-                a=_kdtree_closest(results, vector, root, depth=depth+1, k=k).first,
-                b=results.last
+                a=_kdtree_closest(results, vector, next_branch, depth=depth+1, k=k),
+                b=root['point']
             )
-            results.insert(best)
-            if self.distance(vector, results.last['data']) > (vector['axis'] - root['point']['data'][axis] ** 2):
+            if self.distance(vector, results.last['data']) > (vector[axis] - root['point']['data'][axis]):
                 best = _branching_decision(
                     ref=vector, 
-                    a=_kdtree_closest(results, vector, opposite_branch, depth=depth+1, k=k, n=n).first, 
+                    a=_kdtree_closest(results, vector, opposite_branch, depth=depth+1, k=k), 
                     b=results.last
                 )
-                results.insert(best)
-            return results
+            return best
 
         results = TopResults(n)
-        results = _kdtree_closest(results, vector, self._index, k=self._feature_dim)
+        _kdtree_closest(results, vector, self._index, k=self._feature_dim)
         return results
 
     def exhaustive_search(self, vector, n=20):
@@ -146,26 +149,32 @@ class SearchIndex():
 
 if __name__ == '__main__':
     from pprint import pprint
-
-    point_list = [(7, 2), (5, 4), (9, 6), (4, 7), (8, 1), (2, 3), (2,2)]
-    point_list = [list(p) for p in point_list]
-    print(point_list)
+    import time
+    # point_list = [(7, 2), (5, 4), (9, 6), (4, 7), (8, 1), (2, 3), (2,2)]
+    # point_list = [list(p) for p in point_list]
+    # print(point_list)
     
-    si = SearchIndex()
-    si.set_features(point_list)
-    si.build()
-    # pprint(si._index)
-
-    # index_name = os.path.join('api', 'images', 'index_4.df')
-    # df = pd.read_pickle(index_name)['fusion_text_glove'].to_numpy()
-
     # si = SearchIndex()
-    # si.set_features(df)
+    # si.set_features(point_list)
     # si.build()
     # pprint(si._index)
 
-    res_ex = si.query([2,1], n=1, method='exhaustive')
-    print(res_ex)
+    index_name = os.path.join('api', 'images', 'index_4.df')
+    df = pd.read_pickle(index_name)['fusion_text_glove'].to_numpy()
 
-    res_ef = si.query([2,1], n=1, method='efficient')
-    print(res_ef)
+    print("Building index...")
+    si = SearchIndex()
+    si.set_features(df)
+    si.build()
+    # pprint(si._index)
+
+    print("Performing queries...")
+    start = time.time()
+    res_ex = si.query(df[0], n=4, method='exhaustive')
+    print([r['idx'] for r in res_ex.top])
+    print(f"Exhaustive search took {time.time()-start} s")
+
+    start = time.time()
+    res_ef = si.query(df[0], n=4, method='efficient')
+    print([r['idx'] for r in res_ef.top])
+    print(f"Efficient search took {time.time()-start} s")
