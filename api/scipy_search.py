@@ -71,7 +71,7 @@ class SearchIndex():
     def load(self, filename, reader_fn=pd.read_csv):
         self.data = reader_fn(filename)
 
-    def query(self, vector, col, k=20, return_distances=False):
+    def query(self, vector, col, k=20, return_scores=False):
         assert col in self.trees.keys(), f'Wrong column, {col} is not indexed'
 
         # Apply the same transform to the query vector if the dimensionality is too high (len(vector) > self.max_dim)
@@ -80,12 +80,12 @@ class SearchIndex():
                 vector.reshape(1, -1)).reshape(-1)
 
         # Perform the query in the KDTree of the corresponding column
-        dist, idx = self.trees[col].query(vector, k=k)
+        scores, idx = self.trees[col].query(vector, k=k)
 
         # Retrieve entries from the original data
         results = self.data.iloc[idx]
-        if return_distances:
-            return results, dist  
+        if return_scores:
+            return results, scores  
         return results
 
 

@@ -78,8 +78,19 @@ class SearchIndex():
         self._index = _build_kdtree(self._features, k=self._feature_dim)
 
     def query(self, vector, n=20, method='efficient'):
-        query_fn = self.efficient_search if method == 'efficient' else self.exhaustive_search
+        if method == 'efficient':
+            query_fn = self.efficient_search
+        if method == 'exhaustive':
+            query_fn = self.exhaustive_search
+        if method == 'scipy':
+            query_fn = self.scipy_search
         return query_fn(vector, n)
+
+    def scipy_search(self, vector, n=20):
+        pass
+
+    def scipy_build(self):
+        pass
 
     def efficient_search(self, vector, n=20): 
         '''

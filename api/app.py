@@ -2,6 +2,7 @@ import logging
 import os
 import pickle
 import string
+import time
 
 import numpy as np
 import pandas as pd
@@ -11,13 +12,14 @@ from scipy.spatial import distance
 # import scipy
 from config import *
 from features import SentenceVectorizer
+from scipy_search import SearchIndex
 
 app = FastAPI()
 logger = logging.getLogger(__name__)
 
 varables = {}
 sv = SentenceVectorizer()
-search_index = None
+search_index = SearchIndex()
 
 @app.get('/initialize')
 @app.on_event("startup")
@@ -43,14 +45,15 @@ def reload_sentence_vectorizer():
 def reload_index():
     global search_index
     try:
-        search_index = pd.read_pickle(INDEX_FILENAME)
+        search_index.load(filename=SEARCH_INDEX_FILENAME, reader_fn=SEARCH_READER_FN)
+        search_index.build(search_cols=SEARCH_COLUMNS ,max_dim=SEARCH_MAX_DIM)
     except:
         logger = logging.getLogger('uvicorn.error')
         logger.error('Failed to load index')
         return 'Failed to load index'
 
     logger = logging.getLogger('uvicorn.info')
-    logger.info(f'Success loading index: {INDEX_FILENAME}')
+    logger.info(f'Success loading index: {SEARCH_INDEX_FILENAME}')
     return 'Success loading index'
 
 @app.get('/')
@@ -61,32 +64,39 @@ def index(query: str, count: int = 20, mode: str = 'both', threshold: float = 1.
     if mode == 'content': search_column = 'ocr_glove'
 
     if query:
+        start = time.time()
+        
         # Calculate the embedding of the query
         query_embedding = sv.encode(query)
 
-        # Compare against database, exhaustive search!
-        distance_fn = distance.cosine
-        similarity_scores = [(idx, distance_fn(query_embedding, row[search_column])) for idx, row in search_index.iterrows()]
+        # Perform the query in the index
+        query_results, scores = search_index.query(
+            vector=query_embedding, 
+            col=search_column, 
+            k=count, 
+            return_scores=True
+        )
 
-        # Get Top K
-        similarity_scores = sorted(similarity_scores, key=lambda x: x[1])
-        similarity_scores = similarity_scores[0:count]
-        similarity_scores = filter(lambda x: x[1] <= threshold, similarity_scores)
-
+        # Put results in adequate format
         results = []
-        for ss in similarity_scores:
-            idx, score = ss
-            results.append({
-                'name': search_index['title'][idx],
-                'url': search_index['media'][idx],
-                'score': score
-            })
+        for (i, item), score in zip(query_results.iterrows(), scores):
+            if score <= threshold:
+                results.append({
+                    'name': item['title'],
+                    'url': item['media'],
+                    'score': score
+                })
+
+        logger = logging.getLogger('uvicorn.info')
+        logger.info(f'QUERY: "{query}" ({np.round(time.time()-start, 4)} s., top-{count})')
+        
         return {'results': results }
 
     return 'Hello from FastAPI'    
 
 if __name__ == "__main__":
     import argparse
+
     import uvicorn
 
     ap = argparse.ArgumentParser()
