@@ -21,7 +21,11 @@
 							</a>
 						</div>
 						<div class="col-xs-8" style="padding-left: 0px; padding-right: 0px;">
-							<input type="text" class="form-control input-lg" name="query" required="required" placeholder="Type or paste link here" id="query" value="{{ query }}">
+							{% if mode == 'image' %}
+								<input type="text" class="form-control input-lg" name="query" required="required" placeholder="Type or paste link here" id="query">
+							{% else %}
+								<input type="text" class="form-control input-lg" name="query" required="required" placeholder="Type or paste link here" id="query" value="{{ query }}">
+							{% endif %}
 						</div>
 						<div class="col-xs-2" style="padding-left: 0px; padding-right: 0px;">
 							<input type="submit" class="btn btn-lg btn-block btn-success" value="GO!">
@@ -40,7 +44,11 @@
 		<div class="container">
 			<div class="row">
 				<div class="col-sm-12 features section-description wow fadeIn">
-					<h2>Results for: {{ query }}</h2>
+					{% if mode == 'image' %}
+						<h2>Similar images</h2>
+					{% else %}
+						<h2>Results for: {{ query }}</h2>
+					{% endif %}
 					<div class="divider-1 wow fadeInUp"><span></span></div>
 				</div>
 			</div>

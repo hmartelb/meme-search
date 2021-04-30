@@ -45,7 +45,7 @@ def index():
         if response.status_code == 200:
             results = response.json()['results']
 
-    return render_template('pages/index.html', title='Meme search', query=query, results=results)
+    return render_template('pages/index.html', title='Meme search', query=query, results=results, mode=mode)
 
 if __name__ == '__main__':
     import argparse
