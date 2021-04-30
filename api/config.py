@@ -12,3 +12,4 @@ SEARCH_MAX_DIM = 512
 
 # Models
 EMBEDDINGS_FILENAME = os.path.join('pretrained', 'glove.6B.300d_dict.pickle')
+EMBEDDINGS_URL = ''

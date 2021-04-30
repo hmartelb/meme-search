@@ -5,9 +5,16 @@
 		</a>
 		<div class="card-body">
 			<a href="{{ result.url }}" target="_blank">
-				<h4 class="card-title">{{ result.name }}</h4>
+				<h4 class="card-title">{{ result.name | truncate(25) }}</h4>
 			</a>
 			<p>({{ '%0.4f'| format(result.score|float) }})</p>
+			
+			<form  method="GET" action="{{ url_for('index') }}">
+				<input type="hidden" name="query" value="{{ result.idx }}">
+				<input type="hidden" name="mode" value="image">
+				<button type="submit" class="btn btn-primary">Similar images</button>
+			</form>
+			
 			{#
 			<button type="button" class="btn btn-primary">
 				<!-- <i class="fas fa-download"></i> -->

@@ -20,19 +20,14 @@ def check_url_in_query(text):
     urls = [x[0] for x in urls]
     return len(urls) > 0
 
-def get_default_results():
-    r = {
-        'name': "Meme", 
-        'url': "https://pbs.twimg.com/media/EWmtqxnXgAAZUFa.jpg"
-    }
-    return [r for _ in range(100)]
-
 @app.route('/')
 def index():
     results = []
     query = request.args.get('query', None)
     count = request.args.get('count', 20)
     mode = request.args.get('mode', 'both')
+    threshold = request.args.get('threshold', 100 if mode == 'image' else 0.99 )
+
     if query is not None:
         # Make API calls here
         # TODO: Handle link submissions
@@ -45,13 +40,12 @@ def index():
 
         response = requests.get(
             app.config['API_ENDPOINT'], 
-            params={'query': query, 'count': count, 'mode': mode}
+            params={'query': query, 'count': count, 'mode': mode, 'threshold': threshold}
         )
         if response.status_code == 200:
             results = response.json()['results']
 
     return render_template('pages/index.html', title='Meme search', query=query, results=results)
-
 
 if __name__ == '__main__':
     import argparse

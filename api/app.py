@@ -6,12 +6,13 @@ import time
 
 import numpy as np
 import pandas as pd
+import requests
 from fastapi import FastAPI, Request
 from scipy.spatial import distance
 
 # import scipy
 from config import *
-from features import SentenceVectorizer
+from features import SentenceVectorizer, ImageExtractor
 from scipy_search import SearchIndex
 
 app = FastAPI()
@@ -19,6 +20,7 @@ logger = logging.getLogger(__name__)
 
 varables = {}
 sv = SentenceVectorizer()
+ie = ImageExtractor()
 search_index = SearchIndex()
 
 @app.get('/initialize')
@@ -30,16 +32,24 @@ def initialize():
 @app.get('/reload_sentence_vectorizer')
 def reload_sentence_vectorizer():
     global sv
+    logger = logging.getLogger('uvicorn.info')
     try:
+        # Download if the embeddings file does not exist
+        if not os.path.isfile(EMBEDDINGS_FILENAME):
+            logger.info(f'Downloading embeddings from {EMBEDDINGS_URL}')
+            r = requests.get(url=EMBEDDINGS_URL, allow_redirects=True)
+            with open(EMBEDDINGS_FILENAME, 'wb') as f:
+                f.write(r.content)
+            logger.info(f'Embeddings saved to {EMBEDDINGS_FILENAME}')
+
+        # Load the embeddings
         sv.load(EMBEDDINGS_FILENAME)
+        logger.info(f'Success loading vectors: {EMBEDDINGS_FILENAME}')
+        return 'Success loading vectors'
     except:
         logger = logging.getLogger('uvicorn.error')
         logger.error('Failed to load vectors')
         return 'Failed to load vectors'
-
-    logger = logging.getLogger('uvicorn.info')
-    logger.info(f'Success loading vectors: {EMBEDDINGS_FILENAME}')
-    return 'Success loading vectors'
 
 @app.get('/reload_index')
 def reload_index():
@@ -62,12 +72,18 @@ def index(query: str, count: int = 20, mode: str = 'both', threshold: float = 1.
     if mode == 'both': search_column = 'fusion_text_glove'
     if mode == 'title': search_column = 'title_glove'
     if mode == 'content': search_column = 'ocr_glove'
+    if mode == 'image': search_column = 'img_embedding'
 
     if query:
         start = time.time()
         
-        # Calculate the embedding of the query
-        query_embedding = sv.encode(query)
+        if mode == 'image':
+            img_entry = search_index.data.iloc[int(query)-1] # TODO: this indexing is weird (why -1??)
+            query_embedding = img_entry[search_column]
+            query_embedding = np.asarray(query_embedding)
+        else:
+            # Calculate the embedding of the query
+            query_embedding = sv.encode(query)
 
         # Perform the query in the index
         query_results, scores = search_index.query(
@@ -82,6 +98,7 @@ def index(query: str, count: int = 20, mode: str = 'both', threshold: float = 1.
         for (i, item), score in zip(query_results.iterrows(), scores):
             if score <= threshold:
                 results.append({
+                    'idx': i,
                     'name': item['title'],
                     'url': item['media'],
                     'score': score
@@ -92,7 +109,7 @@ def index(query: str, count: int = 20, mode: str = 'both', threshold: float = 1.
         
         return {'results': results }
 
-    return 'Hello from FastAPI'    
+    return {'message': 'Error, query is empty!'}
 
 if __name__ == "__main__":
     import argparse
