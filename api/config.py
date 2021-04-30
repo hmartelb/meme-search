@@ -11,5 +11,15 @@ SEARCH_COLUMNS = ['fusion_text_glove', 'title_glove', 'ocr_glove', 'img_embeddin
 SEARCH_MAX_DIM = 512
 
 # Models
-EMBEDDINGS_FILENAME = os.path.join('pretrained', 'glove.6B.300d_dict.pickle')
-EMBEDDINGS_URL = ''
+PRETRAINED_MODELS_DIR = 'pretrained'
+if not os.path.isdir(PRETRAINED_MODELS_DIR):
+    os.makedirs(PRETRAINED_MODELS_DIR)
+
+EMBEDDINGS_FILENAME = os.path.join(PRETRAINED_MODELS_DIR, 'glove.6B.300d_dict.pickle')
+EMBEDDINGS_URL = 'https://cloud.tsinghua.edu.cn/f/0e2ab878bb5d4698b344/?dl=1'
+
+# Temp images
+ALLOWED_IMAGE_EXTENSIONS = [".jpg", ".png", ".gif"]
+TEMP_IMAGES_DIR = os.path.join('images', 'external')
+if not os.path.isdir(TEMP_IMAGES_DIR):
+    os.makedirs(TEMP_IMAGES_DIR)

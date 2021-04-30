@@ -1,5 +1,6 @@
 {% macro result_box(result) -%}
-	<div class="card border-success mb-3" style="height: 350px;">
+
+<div class="card border-success mb-3" style="height: 350px;">
 		<a href="{{ result.url }}" target="_blank">
 			<img width="200" height="200" class="card-img-top" src="{{ result.url }}" alt="{{ result.name }}">
 		</a>
@@ -9,25 +10,39 @@
 			</a>
 			<p>({{ '%0.4f'| format(result.score|float) }})</p>
 			
-			<form  method="GET" action="{{ url_for('index') }}">
-				<input type="hidden" name="query" value="{{ result.idx }}">
-				<input type="hidden" name="mode" value="image">
-				<button type="submit" class="btn btn-primary">Similar images</button>
-			</form>
-			
+			{% if result.score|float > 0 %}
+				<form  method="GET" action="{{ url_for('index') }}">
+					<input type="hidden" name="query" value="{{ result.idx }}">
+					<input type="hidden" name="mode" value="image">
+					<button type="submit" class="btn btn-primary">Similar images</button>
+				</form>
+			{% endif %}
+
 			{#
 			<button type="button" class="btn btn-primary">
-				<!-- <i class="fas fa-download"></i> -->
+				<i class="fas fa-download"></i>
 				Download
 			</button>
 			<button type="button" class="btn btn-success">
-				<!-- <i class="far fa-thumbs-up"></i> -->
+				<i class="far fa-thumbs-up"></i>
 				Like
 			</button>
 			#}
 		</div>
-			<!-- <div class="card-footer">
-				<small class="text-muted">Last updated 3 mins ago.</small>
-			</div> -->
 	</div>
+	<!-- <div class="col-xl-3 col-lg-4 col-md-6 mb-4  wow fadeInUp">
+		<div class="bg-white rounded shadow-sm">
+			<img src="{{ result.url }}"
+				alt="" class="img-fluid card-img-top" width="200" height="200">
+			<div class="p-4">
+				<h5> <a href="#" class="text-dark">{{ result.name }}</a></h5>
+				<p class="small text-muted mb-0">Lorem ipsum dolor sit amet, consectetur adipisicing elit</p>
+				<div class="d-flex align-items-center justify-content-between rounded-pill bg-light px-3 py-2 mt-4">
+					<p class="small mb-0"><i class="fa fa-picture-o mr-2"></i><span class="font-weight-bold">JPEG</span></p>
+					<div class="badge badge-success px-3 rounded-pill font-weight-normal">Hot</div>
+				</div>
+			</div>
+		</div>
+	</div> -->
+
 {%- endmacro %}

@@ -26,24 +26,25 @@ def index():
     query = request.args.get('query', None)
     count = request.args.get('count', 20)
     mode = request.args.get('mode', 'both')
-    threshold = request.args.get('threshold', 100 if mode == 'image' else 0.99 )
+    threshold = request.args.get('threshold', 0.99)
 
     if query is not None:
-        # Make API calls here
-        # TODO: Handle link submissions
-        # if check_url_in_query(query):
-        #     # Retrieve image from url, extract features and search 
-        #     print("Is URL: ", query)
-        # else:
-        #     # Search using text input
-        #     print("Normal text:", query)
+        if check_url_in_query(query):
+            mode = 'url'
 
+        if mode in ['image', 'url']:
+            threshold = 100
+        
+        # Make API calls here
         response = requests.get(
             app.config['API_ENDPOINT'], 
             params={'query': query, 'count': count, 'mode': mode, 'threshold': threshold}
         )
         if response.status_code == 200:
-            results = response.json()['results']
+            try:
+                results = response.json()['results']
+            except: 
+                pass # Results are empty
 
     return render_template('pages/index.html', title='Meme search', query=query, results=results, mode=mode)
 

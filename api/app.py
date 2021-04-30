@@ -23,6 +23,12 @@ sv = SentenceVectorizer()
 ie = ImageExtractor()
 search_index = SearchIndex()
 
+def check_image(filename):
+    for ext in ALLOWED_IMAGE_EXTENSIONS:
+        if filename.endswith(ext): 
+            return True
+    return False
+
 @app.get('/initialize')
 @app.on_event("startup")
 def initialize():
@@ -72,12 +78,21 @@ def index(query: str, count: int = 20, mode: str = 'both', threshold: float = 1.
     if mode == 'both': search_column = 'fusion_text_glove'
     if mode == 'title': search_column = 'title_glove'
     if mode == 'content': search_column = 'ocr_glove'
-    if mode == 'image': search_column = 'img_embedding'
+    if mode in ['image', 'url']: search_column = 'img_embedding'
 
     if query:
         start = time.time()
         
-        if mode == 'image':
+        if mode == 'url':
+            if not check_image(query):
+                return 
+
+            r = requests.get(query)
+            img_name = os.path.join(TEMP_IMAGES_DIR, query.split('/')[-1])
+            with open(img_name, 'wb') as f:
+                f.write(r.content)
+            query_embedding = ie.to_vec(filename=img_name, to_numpy=True)
+        elif mode == 'image':
             img_entry = search_index.data.iloc[int(query)-1] # TODO: this indexing is weird (why -1??)
             query_embedding = img_entry[search_column]
             query_embedding = np.asarray(query_embedding)
