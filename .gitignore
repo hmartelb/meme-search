@@ -118,3 +118,5 @@ api/images
 references/
 .vscode/settings.json
 api/pretrained/
+data/images/
+*.pkl
