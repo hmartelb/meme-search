@@ -93,7 +93,7 @@ def index(query: str, count: int = 20, mode: str = 'both', threshold: float = 1.
                 f.write(r.content)
             query_embedding = ie.to_vec(filename=img_name, to_numpy=True)
         elif mode == 'image':
-            img_entry = search_index.data.iloc[int(query)-1] # TODO: this indexing is weird (why -1??)
+            img_entry = search_index.data.iloc[int(query)] # TODO: this indexing is weird (why -1??)
             query_embedding = img_entry[search_column]
             query_embedding = np.asarray(query_embedding)
         else:
@@ -115,7 +115,7 @@ def index(query: str, count: int = 20, mode: str = 'both', threshold: float = 1.
                 results.append({
                     'idx': i,
                     'name': item['title'],
-                    'url': item['media'],
+                    'url': item['url'],
                     'score': score
                 })
 
