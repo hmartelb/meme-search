@@ -2,13 +2,14 @@
 
 <div class="card border-success mb-3" style="height: 350px;">
 		<a href="{{ result.url }}" target="_blank">
-			<img width="200" height="200" class="card-img-top" src="{{ result.url }}" alt="{{ result.name }}">
+			<img width="250" height="250" class="card-img-top" src="{{ result.url }}" alt="{{ result.name }}">
 		</a>
 		<div class="card-body">
 			<a href="{{ result.url }}" target="_blank">
 				<h4 class="card-title">{{ result.name | truncate(25) }}</h4>
 			</a>
-			<p>({{ '%0.4f'| format(result.score|float) }})</p>
+			<!-- <p>{{ result.text | truncate(50) }}</p> -->
+			<!-- <p>({{ '%0.4f'| format(result.score|float) }})</p> -->
 			
 			{% if result.score|float > 0 %}
 				<form  method="GET" action="{{ url_for('index') }}">
