@@ -115,6 +115,7 @@ def index(query: str, count: int = 20, mode: str = 'both', threshold: float = 1.
                 results.append({
                     'idx': i,
                     'name': item['title'],
+                    'text': item['text'],
                     'url': item['url'],
                     'score': score
                 })
