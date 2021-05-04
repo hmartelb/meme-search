@@ -169,7 +169,8 @@ def similarity_matrix(vectors):
     M = np.zeros([len(vectors), len(vectors)])
     for i in range(len(vectors)):
         for j in range(i, len(vectors)):
-            M[i,j] = ie.cosine_similarity(vectors[i], vectors[j], to_numpy=True)
+            # M[i,j] = ie.cosine_similarity(vectors[i], vectors[j], to_numpy=True)
+            M[i,j] = np.linalg.norm(vectors[i]-vectors[j])
     return M
 
 if __name__ == '__main__':
