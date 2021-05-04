@@ -5,6 +5,7 @@ import pandas as pd
 # Configuration and constant definitions for the API
 
 # Search
+TEMPLATES_INDEX_FILENAME = 'templates.pkl'
 SEARCH_INDEX_FILENAME = 'index.pkl'#os.path.join('images', 'index_4.df')
 SEARCH_READER_FN = pd.read_pickle
 SEARCH_COLUMNS = ['fusion_text_glove', 'title_glove', 'ocr_glove', 'img_embedding']

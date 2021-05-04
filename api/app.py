@@ -23,6 +23,9 @@ sv = SentenceVectorizer()
 ie = ImageExtractor()
 search_index = SearchIndex()
 
+templates_list = []
+templates = pd.DataFrame()
+
 def check_image(filename):
     for ext in ALLOWED_IMAGE_EXTENSIONS:
         if filename.endswith(ext): 
@@ -33,6 +36,7 @@ def check_image(filename):
 @app.on_event("startup")
 def initialize():
     reload_index()
+    reload_templates()
     reload_sentence_vectorizer()
     
 @app.get('/reload_sentence_vectorizer')
@@ -72,13 +76,56 @@ def reload_index():
     logger.info(f'Success loading index: {SEARCH_INDEX_FILENAME}')
     return 'Success loading index'
 
+@app.get('/reload_templates')
+def reload_templates():
+    global templates
+    try: 
+        templates = pd.read_pickle(TEMPLATES_INDEX_FILENAME)
+        templates = templates.reset_index()
+    except:
+        logger = logging.getLogger('uvicorn.error')
+        logger.error('Failed to load templates')
+    
+    logger = logging.getLogger('uvicorn.info')
+    logger.info(f'Success loading templates: {TEMPLATES_INDEX_FILENAME}')
+    return 'Success loading templates'
+
+@app.get('/meme')
+def get_meme(idx: int):
+    row = search_index.data.iloc[idx]
+    return {
+        'idx': idx,
+        'id': row['id'],
+        'url': row['url'],
+        'name': row['title'],
+        'text': row['text'],
+        'website': row['website']
+    }
+
+@app.get('/templates')
+def get_templates():
+    global templates_list
+
+    # Calculate only once
+    if len(templates_list) == 0:
+        templates_list = []
+        for i,row in templates.iterrows():
+            templates_list.append({
+                'idx': i,
+                'id': row['id'],
+                'url': row['url'],
+                'name': row['title']
+            })
+
+    return templates_list
+
 @app.get('/')
 def index(query: str, count: int = 20, mode: str = 'both', threshold: float = 1.0):
 
     if mode == 'both': search_column = 'fusion_text_glove'
     if mode == 'title': search_column = 'title_glove'
     if mode == 'content': search_column = 'ocr_glove'
-    if mode in ['image', 'url']: search_column = 'img_embedding'
+    if mode in ['image', 'url', 'template']: search_column = 'img_embedding'
 
     if query:
         start = time.time()
@@ -92,8 +139,14 @@ def index(query: str, count: int = 20, mode: str = 'both', threshold: float = 1.
             with open(img_name, 'wb') as f:
                 f.write(r.content)
             query_embedding = ie.to_vec(filename=img_name, to_numpy=True)
+
+        elif mode == 'template':
+            img_entry = templates.iloc[int(query)]
+            query_embedding = img_entry[search_column]
+            query_embedding = np.asarray(query_embedding)
+
         elif mode == 'image':
-            img_entry = search_index.data.iloc[int(query)] # TODO: this indexing is weird (why -1??)
+            img_entry = search_index.data.iloc[int(query)]
             query_embedding = img_entry[search_column]
             query_embedding = np.asarray(query_embedding)
         else:
@@ -119,6 +172,17 @@ def index(query: str, count: int = 20, mode: str = 'both', threshold: float = 1.
                     'url': item['url'],
                     'score': score
                 })
+        
+        # Insert the template itself as first result in this mode
+        if mode == 'template':
+            temp = templates.iloc[int(query)]
+            results.insert(0, {
+                'idx': int(query),
+                'name': temp['title'],
+                'text': "",
+                'url': temp['url'],
+                'score': 0
+            })
 
         logger = logging.getLogger('uvicorn.info')
         logger.info(f'QUERY: "{query}" ({np.round(time.time()-start, 4)} s., top-{count})')
