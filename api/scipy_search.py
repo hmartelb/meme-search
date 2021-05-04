@@ -28,7 +28,7 @@ class SearchIndex():
                             it into max_dim (default: 300).
     """
 
-    def __init__(self, filename=None, search_cols=[], reader_fn=pd.read_csv, max_dim=300):
+    def __init__(self, filename=None, search_cols=[], max_dims=[], reader_fn=pd.read_csv):
         # assert filename is not None and search_cols == [], 'You must provide search columns'
 
         self.filename = filename
@@ -38,7 +38,10 @@ class SearchIndex():
         self.trees = {}
         self.pcas = {}
 
-        self.max_dim = max_dim
+        if len(max_dims) == len(search_cols):
+            self.max_dims = {sc:dim for sc,dim in zip(search_cols, max_dims)} 
+        else:
+            self.max_dims = {sc:300 for sc in search_cols}
 
         if filename is not None:
             self.load(filename, reader_fn=reader_fn)
@@ -46,22 +49,22 @@ class SearchIndex():
             if self.search_cols != []:
                 self.build()
 
-    def build(self, search_cols=[], max_dim=None):
+    def build(self, search_cols=[], max_dims=[]):
         if search_cols != []:
             self.search_cols = search_cols
         assert len(self.search_cols) > 0, 'Empty columns, cannot build index'
 
-        if max_dim is not None:
-            self.max_dim = max_dim
+        if max_dims is not None and len(search_cols) == len(max_dims):
+            self.max_dims = {sc:dim for sc,dim in zip(search_cols, max_dims)} 
 
         for col in self.search_cols:
             # Convert the values of the dataframe in a 2D numpy array shape=(samples, dim)
             features = np.stack([np.array(item) for item in self.data[col]])
             features = np.nan_to_num(features)
 
-            # Apply dimensionality reduction (PCA) if the dimensionality of the data is too high (dim > self.max_dim)
-            if features.shape[1] > self.max_dim:
-                pca = PCA(n_components=self.max_dim)
+            # Apply dimensionality reduction (PCA) if the dimensionality of the data is too high (dim > self.max_dims)
+            if features.shape[1] > self.max_dims[col]:
+                pca = PCA(n_components=self.max_dims[col])
                 self.pcas[col] = pca.fit(features)
                 features = self.pcas[col].transform(features)
 
@@ -70,17 +73,20 @@ class SearchIndex():
 
     def load(self, filename, reader_fn=pd.read_csv):
         self.data = reader_fn(filename)
+        self.data = self.data.reset_index()
 
-    def query(self, vector, col, k=20, return_scores=False):
+    def query(self, vector, col, k=20, return_scores=False, threshold=None):
         assert col in self.trees.keys(), f'Wrong column, {col} is not indexed'
 
-        # Apply the same transform to the query vector if the dimensionality is too high (len(vector) > self.max_dim)
-        if len(vector) > self.max_dim:
-            vector = self.pcas[col].transform(
-                vector.reshape(1, -1)).reshape(-1)
+        # Apply the same transform to the query vector if the dimensionality is too high (len(vector) > self.max_dims)
+        if len(vector) > self.max_dims[col]:
+            vector = self.pcas[col].transform(vector.reshape(1, -1)).reshape(-1)
 
         # Perform the query in the KDTree of the corresponding column
-        scores, idx = self.trees[col].query(vector, k=k)
+        if threshold is None:
+            scores, idx = self.trees[col].query(vector, k=k)
+        else:
+            scores, idx = self.trees[col].query(vector, k=k, distance_upper_bound=threshold)
 
         # Retrieve entries from the original data
         results = self.data.iloc[idx]

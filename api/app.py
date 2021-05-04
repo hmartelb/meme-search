@@ -66,7 +66,7 @@ def reload_index():
     global search_index
     try:
         search_index.load(filename=SEARCH_INDEX_FILENAME, reader_fn=SEARCH_READER_FN)
-        search_index.build(search_cols=SEARCH_COLUMNS ,max_dim=SEARCH_MAX_DIM)
+        search_index.build(search_cols=SEARCH_COLUMNS, max_dims=SEARCH_MAX_DIMS)
     except:
         logger = logging.getLogger('uvicorn.error')
         logger.error('Failed to load index')
@@ -158,7 +158,8 @@ def index(query: str, count: int = 20, mode: str = 'both', threshold: float = 1.
             vector=query_embedding, 
             col=search_column, 
             k=count, 
-            return_scores=True
+            return_scores=True,
+            # threshold=threshold
         )
 
         # Put results in adequate format
