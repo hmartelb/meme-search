@@ -31,7 +31,7 @@ if __name__ == '__main__':
     for i, row in tqdm(df.iterrows(), total=len(df)):
         try:
             download_image(
-                url='https://'+row['url'],
+                url=row['url'],
                 filename=os.path.join(args.downloads_folder, row['id']+row['format'])
             )
             # time.sleep(args.delay)
