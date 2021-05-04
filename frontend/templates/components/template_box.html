@@ -1,0 +1,20 @@
+{% macro template_box(result) -%}
+
+<div class="card border-success mb-3" style="height: 350px;">
+		<a href="{{ url_for('index', query=result.idx, mode='template') }}">
+			<img width="250" height="250" class="card-img-top" src="{{ result.url }}" alt="{{ result.name }}">
+		</a>
+		<div class="card-body">
+			<a href="{{ url_for('index', query=result.idx, mode='template') }}">
+				<h4 class="card-title">{{ result.name | truncate(25) }}</h4>
+			</a>
+			
+			<form  method="GET" action="{{ url_for('index') }}">
+				<input type="hidden" name="query" value="{{ result.idx }}">
+				<input type="hidden" name="mode" value="template">
+				<button type="submit" class="btn btn-primary">Similar images</button>
+			</form>
+
+		</div>
+	</div>
+{%- endmacro %}

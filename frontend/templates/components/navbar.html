@@ -26,7 +26,7 @@
                 {% set nav_items = [
                     {'name': 'Popular', 'url': 'index'},
                     {'name': 'New', 'url': 'index'},
-                    {'name': 'Templates', 'url': 'index'},
+                    {'name': 'Templates', 'url': 'templates'},
                 ] %}
                 {% for item in nav_items %}
                     <li><a href="{{ url_for(item.url) }}" class="nav-link">{{ item.name }}</a></li>

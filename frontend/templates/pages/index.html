@@ -21,7 +21,7 @@
 							</a>
 						</div>
 						<div class="col-xs-8" style="padding-left: 0px; padding-right: 0px;">
-							{% if mode in ['image', 'url'] %}
+							{% if mode in ['image', 'url', 'template'] %}
 								<input type="text" class="form-control input-lg" name="query" required="required" placeholder="Type or paste link here" id="query">	
 							{% else %}
 								<input type="text" class="form-control input-lg" name="query" required="required" placeholder="Type or paste link here" id="query" value="{{ query }}">
@@ -44,7 +44,7 @@
 		<div class="container">
 			<div class="row">
 				<div class="col-sm-12 features section-description wow fadeIn">
-					{% if mode == 'image' %}
+					{% if mode in ['image','template'] %}
 						<h2>Similar to: {{ results[0].name }}</h2>
 						<img width="200" height="200" src="{{ results[0].url }}">
 					{% elif mode == 'url' %}
