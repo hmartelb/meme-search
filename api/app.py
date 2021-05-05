@@ -12,7 +12,8 @@ from scipy.spatial import distance
 
 # import scipy
 from config import *
-from features import SentenceVectorizer, ImageExtractor
+from sentence_vectorizer import SentenceVectorizer
+from image_extractor import ImageExtractor
 from search import SearchIndex
 
 app = FastAPI()

@@ -5,8 +5,6 @@ import pandas as pd
 from scipy.spatial import KDTree
 from sklearn.decomposition import PCA
 
-from features import SentenceVectorizer
-
 
 class SearchIndex():
     """
@@ -97,6 +95,7 @@ class SearchIndex():
 
 if __name__ == '__main__':
     import time
+    from sentence_vectorizer import SentenceVectorizer
    
     print("Building index...")
     start = time.time()
