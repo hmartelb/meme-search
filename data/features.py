@@ -191,8 +191,16 @@ if __name__ == '__main__':
     sv = SentenceVectorizer(filename=os.path.join('..','api','pretrained','glove.6B.300d_dict.pickle'))
     ie = ImageExtractor()
 
-    df = pd.read_csv(args.input, sep='\t')
-    
+    if args.input.endswith('.tsv'):
+        df = pd.read_csv(args.input, sep='\t')
+    elif args.input.endswith('.pkl'):
+        df = pd.read_pickle(args.input)
+    else:
+        print("Unrecognized input format")
+        exit()
+
+    df = df.reset_index()
+
     df['title_glove'] = None
     df['ocr_glove'] = None
     df['fusion_text_glove'] = None
@@ -208,21 +216,30 @@ if __name__ == '__main__':
             df['ocr_glove'].iloc[i] = sv.encode(row['text'])
             df['fusion_text_glove'].iloc[i] = sv.encode(row['title'] + ' ' + row['text'])
 
+        except:
+            print(f"Error while processing row text at index {i}")
+            print(row)
+            to_drop.append(i)
+
+        try:
             df['img_embedding'].iloc[i] = ie.to_vec(
                 filename=os.path.join(args.downloads_folder, row['id']+row['format']),
                 to_numpy=True
             )
         except:
-            print(f"Error while processing row at index {i}")
+            print(f"Error while processing row image at index {i}")
             print(row)
             to_drop.append(i)
 
     if len(to_drop) > 0:
         print(f"Drop {len(to_drop)} entries")
         df.drop(index=to_drop, inplace=True)
-    
+        df = df.reset_index()
+
     print(f"Saving index to {args.output}")
     df.to_pickle(args.output)    
+
+    print(df.head(10))
 
     # Integrity load tests
     df2 = pd.read_pickle(args.output)
