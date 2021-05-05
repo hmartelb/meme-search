@@ -13,7 +13,7 @@ from scipy.spatial import distance
 # import scipy
 from config import *
 from features import SentenceVectorizer, ImageExtractor
-from scipy_search import SearchIndex
+from search import SearchIndex
 
 app = FastAPI()
 logger = logging.getLogger(__name__)
@@ -202,7 +202,6 @@ def index(query: str, count: int = 20, mode: str = 'both', threshold: float = 1.
 
 if __name__ == "__main__":
     import argparse
-
     import uvicorn
 
     ap = argparse.ArgumentParser()
