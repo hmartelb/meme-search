@@ -121,3 +121,4 @@ api/pretrained/
 data/images/
 data/templates
 *.pkl
+*.bat
