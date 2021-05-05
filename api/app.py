@@ -103,10 +103,10 @@ def get_meme(idx: int):
     }
 
 @app.get('/templates')
-def get_templates():
+def get_templates(page: int, items_per_page: int):
     global templates_list
 
-    # Calculate only once
+    # Calculate only the first time. Use global cache after first request
     if len(templates_list) == 0:
         templates_list = []
         for i,row in templates.iterrows():
@@ -117,7 +117,12 @@ def get_templates():
                 'name': row['title']
             })
 
-    return templates_list
+    return {
+        'templates': templates_list[page*items_per_page:(page+1)*items_per_page], 
+        'total_pages': (len(templates_list) // items_per_page) + 1, 
+        'page': page, 
+        'items_per_page': items_per_page
+    }
 
 @app.get('/')
 def index(query: str, count: int = 20, mode: str = 'both', threshold: float = 1.0):
@@ -161,6 +166,9 @@ def index(query: str, count: int = 20, mode: str = 'both', threshold: float = 1.
             return_scores=True,
             # threshold=threshold
         )
+        valid_results = 0
+        for score in scores:
+            valid_results += int(score > 0 and score <= threshold)
 
         # Put results in adequate format
         results = []
@@ -188,7 +196,7 @@ def index(query: str, count: int = 20, mode: str = 'both', threshold: float = 1.
         logger = logging.getLogger('uvicorn.info')
         logger.info(f'QUERY: "{query}" ({np.round(time.time()-start, 4)} s., top-{count})')
         
-        return {'results': results }
+        return {'results': results, 'valid_results': valid_results}
 
     return {'message': 'Error, query is empty!'}
 
