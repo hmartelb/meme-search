@@ -24,28 +24,31 @@ def check_url_in_query(text):
 @app.route('/meme/<idx>')
 # @cache.cached(timeout=60, query_string=True)
 def meme_details(idx):
-    response = requests.get(app.config['API_ENDPOINT']+'/meme', params={'idx': idx })
+    # response = requests.get(app.config['API_ENDPOINT']+'/meme', params={'idx': idx })
+    # if response.status_code == 200:
+    #     meme = response.json()
+    similar = []
+    # Make API calls here
+    response = requests.get(
+        app.config['API_ENDPOINT'], 
+        params={'query': idx, 'count': 5, 'mode': 'image', 'threshold': 15}
+    )
     if response.status_code == 200:
-        meme = response.json()
-        similar = []
-        # Make API calls here
-        response = requests.get(
-            app.config['API_ENDPOINT'], 
-            params={'query': idx, 'count': 5, 'mode': 'image', 'threshold': 15}
-        )
-        if response.status_code == 200:
-            try:
-                similar = response.json()['results']
-                similar = similar[1:]
-            except: 
-                pass # Results are empty
+        try:
+            response_json = response.json()
+            meme = response_json['results'][0]
+            similar = response_json['results'][1:]
+            valid_results = response_json['valid_results']
 
-        return render_template(
-            'pages/meme_details.html',
-            title="Meme search",
-            meme=meme,
-            similar_memes=similar
-        )
+            return render_template(
+                'pages/meme_details.html',
+                title="Meme search",
+                meme=meme,
+                similar_memes=similar,
+                valid_results=valid_results
+            )
+        except: 
+            pass # Results are empty
 
     return redirect(url_for('index'))
 
@@ -55,21 +58,21 @@ def templates():
     current_page = int(request.args.get('page', 1))
     items_per_page = int(request.args.get('count', 20))
 
-    response = requests.get(app.config['API_ENDPOINT']+'/templates')
+    # Get results corresponding to the current page
+    response = requests.get(
+        app.config['API_ENDPOINT']+'/templates', 
+        params={'page': current_page, 'items_per_page': items_per_page}
+    )
     if response.status_code == 200:
         try:
             results = response.json()
-            total_pages = (len(results) // items_per_page) + 1
-            # Get results corresponding to the current page
-            results = results[current_page*items_per_page:(current_page+1)*items_per_page]
-
             return render_template(
                 'pages/templates.html', 
                 title='Meme search', 
-                results=results, 
-                total_pages=total_pages, 
-                current_page=current_page, 
-                count=items_per_page
+                results=results['templates'], 
+                total_pages=results['total_pages'], 
+                current_page=results['page'], 
+                count=results['items_per_page']
             )
         except:
             pass
@@ -84,6 +87,8 @@ def index():
     count = request.args.get('count', 20)
     mode = request.args.get('mode', 'both')
     threshold = request.args.get('threshold', 0.99)
+
+    valid_results = 0
 
     if query is not None:
         if check_url_in_query(query):
@@ -102,7 +107,9 @@ def index():
         )
         if response.status_code == 200:
             try:
-                results = response.json()['results']
+                response_json = response.json()
+                results = response_json['results']
+                valid_results = response_json['valid_results']
             except: 
                 pass # Results are empty
 
@@ -111,6 +118,7 @@ def index():
         title='Meme search',
         query=query, 
         results=results, 
+        valid_results=valid_results,
         mode=mode
     )
 
