@@ -1,0 +1,32 @@
+<div class="container">
+
+    <div class="row">
+        <div class="col-sm-12 text wow fadeInUp">
+
+            <form class="form" method="GET" action="{{ url_for('index') }}">
+                <div class="row" style="margin-left: 0px; margin-right: 0px;">
+                    <div class="col-xs-2" style="padding-left: 0px; padding-right: 0px;">
+                        <a href="{{ url_for('index') }}">
+                            <img src="{{ url_for('static', filename='img/doge.png') }}"
+                                style="max-width: 40px; text-align: right;">
+                        </a>
+                    </div>
+                    <div class="col-xs-8" style="padding-left: 0px; padding-right: 0px;">
+                        {% if mode in ['image', 'url', 'template'] %}
+                        <input type="text" class="form-control input-lg" name="query" required="required"
+                            placeholder="Type or paste link here" id="query">
+                        {% else %}
+                        <input type="text" class="form-control input-lg" name="query" required="required"
+                            placeholder="Type or paste link here" id="query" value="{{ query }}">
+                        {% endif %}
+                    </div>
+                    <div class="col-xs-2" style="padding-left: 0px; padding-right: 0px;">
+                        <input type="submit" class="btn btn-lg btn-block btn-success" value="GO!">
+                    </div>
+                </div>
+            </form>
+
+        </div>
+    </div>
+
+</div>

@@ -6,30 +6,8 @@
 
 {% block content %}
 
-<div class="container">
-	<div class="row">
-		<div class="col-sm-12 text wow fadeInUp">
-			<form class="form" method="GET" action="{{ url_for('index') }}">
-				<div class="row" style="margin-left: 0px; margin-right: 0px;">
-					<div class="col-xs-2" style="padding-left: 0px; padding-right: 0px;">
-						<a href="{{ url_for('index') }}">
-							<img src="{{ url_for('static', filename='img/doge.png') }}"
-								style="max-width: 40px; text-align: right;">
-						</a>
-					</div>
-					<div class="col-xs-8" style="padding-left: 0px; padding-right: 0px;">
-						<input type="text" class="form-control input-lg" name="query" required="required"
-							placeholder="Type or paste link here" id="query">
-					</div>
-					<div class="col-xs-2" style="padding-left: 0px; padding-right: 0px;">
-						<input type="submit" class="btn btn-lg btn-block btn-success" value="GO!">
-					</div>
-				</div>
-			</form>
+{% include 'components/search_bar.html' %}
 
-		</div>
-	</div>
-</div>
 <div class="container">
 	<div class="row">
 		<div class="col-sm-12 features section-description wow fadeIn">
@@ -43,6 +21,7 @@
 		<a href="{{ meme.url }}" target="_blank">
 			<p>{{ meme.url }}</p>
 		</a>
+
 		<div class="col-sm-12 features section-description wow fadeIn">
 			<h2>Similar images</h2>
 			<div class="divider-1 wow fadeInUp"><span></span></div>

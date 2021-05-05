@@ -6,65 +6,39 @@
 
 {% block content %}
 {% if query is not none %}
-	<div class="container">
-
-		<div class="row">
-			<div class="col-sm-12 text wow fadeInUp">
-				
-				<!-- <h3><strong>Search</strong> your meme</h3> -->
-
-				<form class="form" method="GET" action="{{ url_for('index') }}">
-					<div class="row" style="margin-left: 0px; margin-right: 0px;">
-						<div class="col-xs-2" style="padding-left: 0px; padding-right: 0px;">
-							<a href="{{ url_for('index') }}">
-								<img src="{{ url_for('static', filename='img/doge.png') }}" style="max-width: 40px; text-align: right;">
-							</a>
-						</div>
-						<div class="col-xs-8" style="padding-left: 0px; padding-right: 0px;">
-							{% if mode in ['image', 'url', 'template'] %}
-								<input type="text" class="form-control input-lg" name="query" required="required" placeholder="Type or paste link here" id="query">	
-							{% else %}
-								<input type="text" class="form-control input-lg" name="query" required="required" placeholder="Type or paste link here" id="query" value="{{ query }}">
-							{% endif %}
-						</div>
-						<div class="col-xs-2" style="padding-left: 0px; padding-right: 0px;">
-							<input type="submit" class="btn btn-lg btn-block btn-success" value="GO!">
-						</div>
-					</div>
-				</form>
-
-			</div>
-		</div>
-
-	</div>
-
+	{% include 'components/search_bar.html' %}
 	{% from 'components/result_box.html' import result_box with context %}
 
 	<div class="features-container section-container">
 		<div class="container">
-			<div class="row">
-				<div class="col-sm-12 features section-description wow fadeIn">
-					{% if mode in ['image','template'] %}
-						<h2>Similar to: {{ results[0].name }}</h2>
-						<img width="200" height="200" src="{{ results[0].url }}">
-					{% elif mode == 'url' %}
-						<h2>Similar to:</h2>
-						<img width="200" height="200" src="{{ query }}">
-					{% else %}
-						<h2>Results for: {{ query }}</h2>
-					{% endif %}
-					<div class="divider-1 wow fadeInUp"><span></span></div>
+		
+			{% if valid_results > 0 %}
+				<div class="row">
+					<div class="col-sm-12 features section-description wow fadeIn">
+						{% if mode in ['image','template'] %}
+							<h2>Similar to: {{ results[0].name }}</h2>
+							<img width="200" height="200" src="{{ results[0].url }}">
+						{% elif mode == 'url' %}
+							<h2>Similar to:</h2>
+							<img width="200" height="200" src="{{ query }}">
+						{% else %}
+							<h2>Results for: {{ query }}</h2>
+						{% endif %}
+						<div class="divider-1 wow fadeInUp"><span></span></div>
+					</div>
 				</div>
-			</div>
-			<div class="row">
-				{% for res in results %}
-					{% if res.score > 0 %}
-						<div class="col-sm-3 features-box wow fadeInUp">
-							{{ result_box(res) }}
-						</div>
-					{% endif %}
-				{% endfor %}
-			</div>
+				
+				<div class="row">
+					{% for res in results %}
+						{% if res.score > 0 %}
+							<div class="col-sm-3 features-box wow fadeInUp">
+								{{ result_box(res) }}
+							</div>
+						{% endif %}
+					{% endfor %}
+				</div>
+			{% endif %}
+
 		</div>
 	</div>
 
@@ -89,21 +63,11 @@
 							</div>
 						</div>
 					</form>
-					
-				
-
 					<div class="description">
 						<p class="medium-paragraph">
 							Using text for your query isn't enough? <br> Try out the image search and other advanced functionalities. GL.
 						</p>
-						{% for i in range(10) %}
-							<!-- <button type="button" class="btn btn-primary">
-								Profile <span class="badge badge-light">9</span>
-								<span class="sr-only">unread messages</span>
-							</button> -->
-						{% endfor %}
 					</div>
-
 				</div>
 			</div>
 
