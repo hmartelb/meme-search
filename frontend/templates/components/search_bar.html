@@ -13,15 +13,16 @@
                     </div>
                     <div class="col-xs-8" style="padding-left: 0px; padding-right: 0px;">
                         {% if mode in ['image', 'url', 'template'] %}
-                        <input type="text" class="form-control input-lg" name="query" required="required"
-                            placeholder="Type or paste link here" id="query">
+                        <input id="search-input" type="text" class="form-control input-lg" name="query"
+                            required="required" placeholder="Type or paste link here" id="query">
                         {% else %}
-                        <input type="text" class="form-control input-lg" name="query" required="required"
-                            placeholder="Type or paste link here" id="query" value="{{ query }}">
+                        <input id="search-input" type="text" class="form-control input-lg" name="query"
+                            required="required" placeholder="Type or paste link here" id="query" value="{{ query }}">
                         {% endif %}
+                        <ul class="list-group" style="max-height: 50vh; overflow: auto;" id="input-suggestions"></ul>
                     </div>
                     <div class="col-xs-2" style="padding-left: 0px; padding-right: 0px;">
-                        <input type="submit" class="btn btn-lg btn-block btn-success" value="GO!">
+                        <input id="search-submit" type="submit" class="btn btn-lg btn-block btn-success" value="GO!">
                     </div>
                 </div>
             </form>

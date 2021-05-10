@@ -2,7 +2,7 @@ import os
 import re
 
 import requests
-from flask import Flask, redirect, render_template, request, url_for
+from flask import Flask, redirect, render_template, request, url_for, jsonify
 from flask_assets import Bundle, Environment
 from flask_caching import Cache
 
@@ -20,6 +20,21 @@ def check_url_in_query(text):
     urls = re.findall(regex, text)      
     urls = [x[0] for x in urls]
     return len(urls) > 0
+
+@app.route('/autocomplete')
+def autocomplete():
+    query_text = request.args.get('query_text', None)
+
+    if query_text is not None:
+        response = requests.get(
+            app.config['API_ENDPOINT'] + "/autocomplete",
+            params={'query_text': query_text, 'col': 'title'}
+        )
+        if response.status_code == 200:
+            response_json = response.json()
+            print(response_json)
+            return jsonify({'result': response_json })
+    return jsonify({'result': []})
 
 @app.route('/meme/<idx>')
 # @cache.cached(timeout=60, query_string=True)
@@ -127,6 +142,7 @@ if __name__ == '__main__':
 
     ap = argparse.ArgumentParser()
     ap.add_argument('--port', default=5006, type=int)
+    ap.add_argument('--debug', default=True, type=bool)
     args = ap.parse_args()
 
     app.config['DEBUG'] = True

@@ -56,10 +56,11 @@
 					<form class="form" method="GET" action="{{ url_for('index') }}">
 						<div class="row" style="margin-left: 0px; margin-right: 0px;">
 							<div class="col-sm-10" style="padding-left: 0px; padding-right: 0px;">
-								<input type="text" class="form-control input-lg" name="query" required="required" placeholder="Type or paste link here" id="query">
+								<input type="text" class="form-control input-lg" name="query" required="required" placeholder="Type or paste link here" id="search-input">
+								<ul class="list-group" style="max-height: 50vh; overflow: auto;" id="input-suggestions"></ul>
 							</div>
 							<div class="col-sm-2" style="padding-left: 0px; padding-right: 0px;">
-								<input type="submit" class="btn btn-lg btn-block btn-success" value="GO!">
+								<input id="search-submit" type="submit" class="btn btn-lg btn-block btn-success" value="GO!">
 							</div>
 						</div>
 					</form>

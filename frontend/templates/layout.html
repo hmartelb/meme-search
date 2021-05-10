@@ -60,6 +60,39 @@
                 new WOW().init();
             });
         </script>
+
+        <script>
+            $(document).ready(function () {
+                $.ajaxSetup({ cache: false });
+
+                $('#search-input').keyup(function () {
+                    $('#input-suggestions').html('');
+                    var searchField = $('#search-input').val();
+                    
+                    if(searchField.length > 2){
+                        $.ajax({
+                            url: "{{ url_for('autocomplete') }}",
+                            data: {"query_text": searchField },
+                            success: function (data) {
+                                $.each(data.result, function (key, value) {
+                                    // $('#input-suggestions').append('<li class="list-group-item link-class">' + value.name + '</li>');
+                                    $('#input-suggestions').append('<li class="list-group-item link-class" style="text-align: left; color: black;"><img src="' + value.url + '" height="40" width="40" style="margin-right: 20px;" /> ' + value.name.substring(0,40) + '</li>');
+                                });
+                            }
+                        });
+                    }
+                    
+                });
+
+                $('#input-suggestions').on('click', 'li', function () {
+                    var click_text = $(this).text().split('|');
+                    $('#search-input').val($.trim(click_text[0]));
+                    $("#input-suggestions").html('');
+                    $("#search-submit").click();
+                });
+                
+            });
+        </script>
         
         <!--[if lt IE 10]>
             <script src="assets/js/placeholder.js"></script>
