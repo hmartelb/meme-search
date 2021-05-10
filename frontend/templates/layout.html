@@ -85,8 +85,8 @@
                 });
 
                 $('#input-suggestions').on('click', 'li', function () {
-                    var click_text = $(this).text().split('|');
-                    $('#search-input').val($.trim(click_text[0]));
+                    var click_text = $(this).text();
+                    $('#search-input').val($.trim(click_text));
                     $("#input-suggestions").html('');
                     $("#search-submit").click();
                 });

@@ -32,7 +32,6 @@ def autocomplete():
         )
         if response.status_code == 200:
             response_json = response.json()
-            print(response_json)
             return jsonify({'result': response_json })
     return jsonify({'result': []})
 
