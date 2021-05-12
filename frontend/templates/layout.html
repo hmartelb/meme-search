@@ -76,7 +76,7 @@
                             success: function (data) {
                                 $.each(data.result, function (key, value) {
                                     // $('#input-suggestions').append('<li class="list-group-item link-class">' + value.name + '</li>');
-                                    $('#input-suggestions').append('<li class="list-group-item link-class" style="text-align: left; color: black;"><img src="' + value.url + '" height="40" width="40" style="margin-right: 20px;" /> ' + value.name.substring(0,40) + '</li>');
+                                    $('#input-suggestions').append('<li idx="'+ value.idx +'" class="list-group-item link-class" style="text-align: left; color: black;"><img src="' + value.url + '" height="40" width="40" style="margin-right: 20px;" /> ' + value.name.substring(0,40) + '</li>');
                                 });
                             }
                         });
@@ -89,6 +89,8 @@
                     $('#search-input').val($.trim(click_text));
                     $("#input-suggestions").html('');
                     $("#search-submit").click();
+                    // var click_idx = $(this).attr("idx");
+                    // concole.log(click_idx);
                 });
                 
             });
