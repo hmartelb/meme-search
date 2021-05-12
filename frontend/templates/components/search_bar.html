@@ -20,6 +20,13 @@
                             required="required" placeholder="Type or paste link here" id="query" value="{{ query }}">
                         {% endif %}
                         <ul class="list-group" style="max-height: 50vh; overflow: auto;" id="input-suggestions"></ul>
+
+                        <!-- Template input suggestion -->
+                        <!-- <li id="input-suggestion-template" class="list-group-item list-group-item-action" style="text-align: left; color: black; display: flex;">
+                            <img src="{{ url_for('static', filename='img/doge.png') }}" height="40" width="40" style="margin-right: 20px;" />
+                            Some example text goes here
+                        </li> -->
+                        
                     </div>
                     <div class="col-xs-2" style="padding-left: 0px; padding-right: 0px;">
                         <input id="search-submit" type="submit" class="btn btn-lg btn-block btn-success" value="GO!">
