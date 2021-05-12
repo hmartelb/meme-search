@@ -217,6 +217,22 @@ def index(query: str, count: int = 20, mode: str = 'both', threshold: float = 1.
                 'score': 0
             })
 
+        # # Find exact matches if there is a text query
+        # if mode not in ['image', 'url', 'template']:
+            
+        #     exact_matches = search_index.data[search_index.data['title'].str.contains(query, flags=re.IGNORECASE)]
+            
+        #     print(f"Exact matches {len(exact_matches)}")
+
+        #     for i,item in exact_matches.iterrows():
+        #         results.append({
+        #             'idx': i,
+        #             'name': item['title'],
+        #             'text': item['text'],
+        #             'url': item['url'],
+        #             'score': 0
+        #         })
+
         logger = logging.getLogger('uvicorn.info')
         logger.info(f'QUERY: "{query}" ({np.round(time.time()-start, 4)} s., top-{count})')
         
