@@ -5,10 +5,12 @@ import requests
 from flask import Flask, redirect, render_template, request, url_for, jsonify
 from flask_assets import Bundle, Environment
 from flask_caching import Cache
+# from flask_cache import Cache
 
 app = Flask(__name__)
 app.config.from_object('config')
-# cache = Cache(app, config={'CACHE_TYPE': 'SimpleCache'})
+cache = Cache()
+cache.init_app(app, config={'CACHE_TYPE': 'simple'})
 # assets = Environment(app)
 
 def check_url_in_query(text):
@@ -26,17 +28,36 @@ def autocomplete():
     query_text = request.args.get('query_text', None)
 
     if query_text is not None:
-        response = requests.get(
-            app.config['API_ENDPOINT'] + "/autocomplete",
-            params={'query_text': query_text, 'col': 'title'}
-        )
-        if response.status_code == 200:
-            response_json = response.json()
-            return jsonify({'result': response_json })
+        # Convert to lowercase and remove trailing spaces
+        query_text = query_text.lower().rstrip()
+        suggestions = cache.get(query_text)
+        # Not in cache, get suggestions
+        if suggestions is None:
+            # 1) Check query prefixes
+            for i in range(len(query_text), 2, -1):
+                suggestions = cache.get(query_text[:i])
+                if suggestions is not None:
+                    break
+            # 1.A) Not found in cache, request to the API
+            if suggestions is None:
+                response = requests.get(
+                    app.config['API_ENDPOINT'] + "/autocomplete",
+                    params={'query_text': query_text, 'col': 'title'}
+                )
+                if response.status_code == 200:
+                    suggestions = response.json()
+            # 1.B) Prefix found in cache, filter the results further
+            else:
+                suggestions = [item for item in suggestions if query_text in item['name'].lower()]
+
+            # 2) Store it for the next query
+            cache.set(query_text, suggestions, timeout=60)
+
+        return jsonify({'result': suggestions })
     return jsonify({'result': []})
 
 @app.route('/meme/<idx>')
-# @cache.cached(timeout=60, query_string=True)
+@cache.cached(timeout=60, query_string=True)
 def meme_details(idx):
     # response = requests.get(app.config['API_ENDPOINT']+'/meme', params={'idx': idx })
     # if response.status_code == 200:
@@ -67,7 +88,7 @@ def meme_details(idx):
     return redirect(url_for('index'))
 
 @app.route('/templates')
-# @cache.cached(timeout=60, query_string=True)
+@cache.cached(timeout=60, query_string=True)
 def templates():
     current_page = int(request.args.get('page', 1))
     items_per_page = int(request.args.get('count', 20))
@@ -94,7 +115,7 @@ def templates():
     return redirect(url_for('index'))
 
 @app.route('/')
-# @cache.cached(timeout=60, query_string=True)
+@cache.cached(timeout=60, query_string=True)
 def index():
     results = []
     query = request.args.get('query', None)
