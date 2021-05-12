@@ -69,6 +69,8 @@ def reload_index():
     try:
         search_index.load(filename=SEARCH_INDEX_FILENAME, reader_fn=SEARCH_READER_FN)
         search_index.build(search_cols=SEARCH_COLUMNS, max_dims=SEARCH_MAX_DIMS)
+
+        # search_index.data['text'] = search_index.data['text'].fillna(value='')
     except:
         logger = logging.getLogger('uvicorn.error')
         logger.error('Failed to load index')
@@ -95,7 +97,13 @@ def reload_templates():
 @app.get('/autocomplete')
 def autocomplete(query_text: str, col: str = 'title'):
     if len(query_text) >= 2:
-        rows = search_index.data[search_index.data[col].str.contains(query_text, flags=re.IGNORECASE)]
+        # Get matching entries for title and text content
+        rows_title = search_index.data[search_index.data['title'].str.contains(query_text, flags=re.IGNORECASE)]
+        # rows_text = search_index.data[search_index.data['text'].str.contains(query_text, flags=re.IGNORECASE)]
+
+        # Combine them and drop duplicates
+        rows = rows_title
+        # rows = pd.concat([rows_title, rows_text]).drop_duplicates(subset=['id'])
         return [{
             'idx': idx,
             'id': row['id'],

@@ -49,6 +49,7 @@ def autocomplete():
             # 1.B) Prefix found in cache, filter the results further
             else:
                 suggestions = [item for item in suggestions if query_text in item['name'].lower()]
+                # suggestions = [item for item in suggestions if query_text in item['name'].lower() or query_text in item['text'].lower()]
 
             # 2) Store it for the next query
             cache.set(query_text, suggestions, timeout=60)
