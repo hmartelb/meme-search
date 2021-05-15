@@ -21,7 +21,9 @@
                             </a>
 						{% elif mode == 'url' %}
 							<h2>Similar to:</h2>
-							<img width="200" height="200" src="{{ query }}">
+                            <a href="{{ query }}" target="_blank">
+                                <img width="200" height="200" src="{{ query }}">
+                            </a>
 						{% else %}
 							<h2>Results for: {{ query }}</h2>
 						{% endif %}
@@ -39,7 +41,15 @@
 					{% endfor %}
                 </div>
             {% else %}
-            <!-- No results were found for your query -->
+                <!-- No results were found for your query -->
+                <div class="row">
+                    <div class="col-sm-12 text wow fadeInLeft">
+                        <h1>YOUR QUERY: {{ query | capitalize }}</h1>
+                        <img src="{{ url_for('static', filename='img/no-results-found.jpg') }}" style="margin-top: 20px; margin-bottom: 20px; height: 40vh;">
+                        <h1>RESULTS: * empty *</h1>
+                        <p>You can try with another query. <br> Better luck next time!</p>
+                    </div>
+                </div>
 			{% endif %}
 
 		</div>

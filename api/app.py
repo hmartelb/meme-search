@@ -161,7 +161,7 @@ def index(query: str, count: int = 20, mode: str = 'both', threshold: float = 1.
         
         if mode == 'url':
             if not check_image(query):
-                return 
+                return {'results': [], 'valid_results': 0}
 
             r = requests.get(query)
             img_name = os.path.join(TEMP_IMAGES_DIR, query.split('/')[-1])

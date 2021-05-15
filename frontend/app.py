@@ -67,7 +67,7 @@ def autocomplete():
 
 
 @app.route('/meme/<idx>')
-@cache.cached(timeout=60, query_string=True)
+# @cache.cached(timeout=60, query_string=True)
 def meme_details(idx):
     # response = requests.get(app.config['API_ENDPOINT']+'/meme', params={'idx': idx })
     # if response.status_code == 200:
@@ -99,7 +99,7 @@ def meme_details(idx):
 
 
 @app.route('/templates')
-@cache.cached(timeout=60, query_string=True)
+# @cache.cached(timeout=60, query_string=True)
 def templates():
     current_page = int(request.args.get('page', 1))
     items_per_page = int(request.args.get('count', 20))
@@ -127,7 +127,7 @@ def templates():
 
 
 @app.route('/search')
-@cache.cached(timeout=60, query_string=True)
+# @cache.cached(timeout=60, query_string=True)
 def search():
     results = []
     query = request.args.get('query', None)
