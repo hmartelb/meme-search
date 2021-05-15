@@ -16,7 +16,9 @@
 					<div class="col-sm-12 features section-description wow fadeIn">
 						{% if mode in ['image','template'] %}
 							<h2>Similar to: {{ results[0].name }}</h2>
-							<img width="200" height="200" src="{{ results[0].url }}">
+                            <a href="{{ url_for('meme_details', idx=results[0].idx) }}">
+                                <img width="200" height="200" src="{{ results[0].url }}">
+                            </a>
 						{% elif mode == 'url' %}
 							<h2>Similar to:</h2>
 							<img width="200" height="200" src="{{ query }}">

@@ -28,7 +28,7 @@ def check_url_in_query(text):
 @app.route('/autocomplete')
 def autocomplete():
     query_text = request.args.get('query_text', None)
-
+    suggestions = []
     if query_text is not None:
         # Convert to lowercase and remove trailing spaces
         query_text = query_text.lower().rstrip()
@@ -57,8 +57,13 @@ def autocomplete():
             # 2) Store it for the next query
             cache.set(query_text, suggestions, timeout=60)
 
-        return jsonify({'result': suggestions})
-    return jsonify({'result': []})
+    #     return jsonify({'result': suggestions})
+        return render_template(
+            'components/input_suggestions.html',
+            results=suggestions
+        )
+    # return jsonify({'result': []})
+    
 
 
 @app.route('/meme/<idx>')
