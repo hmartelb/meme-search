@@ -114,6 +114,10 @@ def autocomplete(query_text: str, col: str = 'title'):
         } for idx,row in rows.iterrows()]
     return []
 
+@app.get('/total_memes')
+def total_memes():
+    return { 'total_memes': len(search_index.data) }
+
 @app.get('/meme')
 def get_meme(idx: int):
     row = search_index.data.iloc[idx]
@@ -148,7 +152,7 @@ def get_templates(page: int, items_per_page: int):
         'items_per_page': items_per_page
     }
 
-@app.get('/')
+@app.get('/search')
 def index(query: str, count: int = 20, mode: str = 'both', threshold: float = 1.0):
 
     if mode == 'both': search_column = 'fusion_text_glove'

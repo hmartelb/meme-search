@@ -25,6 +25,19 @@ def check_url_in_query(text):
     return len(urls) > 0
 
 
+def get_total_memes():
+    # 1) Check the cache
+    total_memes = cache.get('total_memes')
+    if total_memes is None:
+        # Request to the API
+        response = requests.get(app.config['API_ENDPOINT'] + "/total_memes")
+        if response.status_code == 200:
+            total_memes = response.json()['total_memes']
+            # 2) Store it for the next query
+            cache.set('total_memes', total_memes, timeout=3600)
+    return total_memes
+
+
 @app.route('/autocomplete')
 def autocomplete():
     query_text = request.args.get('query_text', None)
@@ -57,17 +70,14 @@ def autocomplete():
             # 2) Store it for the next query
             cache.set(query_text, suggestions, timeout=60)
 
-    #     return jsonify({'result': suggestions})
-        return render_template(
-            'components/input_suggestions.html',
-            results=suggestions
-        )
-    # return jsonify({'result': []})
-    
+    return render_template(
+        'components/input_suggestions.html',
+        results=suggestions
+    )    
 
 
 @app.route('/meme/<idx>')
-# @cache.cached(timeout=60, query_string=True)
+@cache.cached(timeout=60, query_string=True)
 def meme_details(idx):
     # response = requests.get(app.config['API_ENDPOINT']+'/meme', params={'idx': idx })
     # if response.status_code == 200:
@@ -87,7 +97,7 @@ def meme_details(idx):
 
             return render_template(
                 'pages/meme_details.html',
-                title="Meme search",
+                title=f"Meme search - {meme['name']}",
                 meme=meme,
                 similar_memes=similar,
                 valid_results=valid_results
@@ -99,7 +109,7 @@ def meme_details(idx):
 
 
 @app.route('/templates')
-# @cache.cached(timeout=60, query_string=True)
+@cache.cached(timeout=60, query_string=True)
 def templates():
     current_page = int(request.args.get('page', 1))
     items_per_page = int(request.args.get('count', 20))
@@ -127,7 +137,7 @@ def templates():
 
 
 @app.route('/search')
-# @cache.cached(timeout=60, query_string=True)
+@cache.cached(timeout=60, query_string=True)
 def search():
     results = []
     query = request.args.get('query', None)
@@ -148,7 +158,7 @@ def search():
 
     # Make API calls here
     response = requests.get(
-        app.config['API_ENDPOINT'],
+        app.config['API_ENDPOINT']+'/search',
         params={'query': query, 'count': count,
                 'mode': mode, 'threshold': threshold}
     )
@@ -176,7 +186,8 @@ def search():
 def index():
     return render_template(
         'pages/index.html',
-        title='Meme search - Home'
+        title='Meme search - Home',
+        total_memes=get_total_memes()
     )
 
 
