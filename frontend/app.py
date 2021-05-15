@@ -85,7 +85,7 @@ def meme_details(idx):
     similar = []
     # Make API calls here
     response = requests.get(
-        app.config['API_ENDPOINT'],
+        app.config['API_ENDPOINT']+'/search',
         params={'query': idx, 'count': 5, 'mode': 'image', 'threshold': 15}
     )
     if response.status_code == 200:
