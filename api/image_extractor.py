@@ -1,5 +1,6 @@
 import torch
 import torchvision
+from PIL import Image
 
 class ImageExtractor():
     def __init__(self):
