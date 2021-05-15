@@ -44,7 +44,7 @@
                 <!-- No results were found for your query -->
                 <div class="row">
                     <div class="col-sm-12 text wow fadeInLeft">
-                        <h1>YOUR QUERY: {{ query | capitalize }}</h1>
+                        <h1>YOUR QUERY: {{ query }}</h1>
                         <img src="{{ url_for('static', filename='img/no-results-found.jpg') }}" style="margin-top: 20px; margin-bottom: 20px; height: 40vh;">
                         <h1>RESULTS: * empty *</h1>
                         <p>You can try with another query. <br> Better luck next time!</p>
