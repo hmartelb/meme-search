@@ -1,0 +1,45 @@
+{% extends "layout.html" %}
+
+{% block head %}
+{{ super() }}
+{% endblock %}
+
+{% block content %}
+{% include 'components/search_bar.html' %}
+{% from 'components/result_box.html' import result_box with context %}
+
+	<div class="features-container section-container">
+		<div class="container">
+		
+			{% if valid_results > 0 %}
+				<div class="row">
+					<div class="col-sm-12 features section-description wow fadeIn">
+						{% if mode in ['image','template'] %}
+							<h2>Similar to: {{ results[0].name }}</h2>
+							<img width="200" height="200" src="{{ results[0].url }}">
+						{% elif mode == 'url' %}
+							<h2>Similar to:</h2>
+							<img width="200" height="200" src="{{ query }}">
+						{% else %}
+							<h2>Results for: {{ query }}</h2>
+						{% endif %}
+						<div class="divider-1 wow fadeInUp"><span></span></div>
+					</div>
+				</div>
+				
+				<div class="row">
+					{% for res in results %}
+						{% if res.score > 0 %}
+							<div class="col-sm-3 features-box wow fadeInUp">
+								{{ result_box(res) }}
+							</div>
+						{% endif %}
+					{% endfor %}
+                </div>
+            {% else %}
+            <!-- No results were found for your query -->
+			{% endif %}
+
+		</div>
+	</div>
+{% endblock %}

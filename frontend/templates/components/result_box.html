@@ -12,7 +12,7 @@
 			<p>({{ '%0.4f'| format(result.score|float) }})</p>
 			
 			{% if result.score|float > 0 %}
-				<form  method="GET" action="{{ url_for('index') }}">
+				<form  method="GET" action="{{ url_for('search') }}">
 					<input type="hidden" name="query" value="{{ result.idx }}">
 					<input type="hidden" name="mode" value="image">
 					<button type="submit" class="btn btn-primary">Similar images</button>
