@@ -77,16 +77,12 @@ def autocomplete():
 
 
 @app.route('/meme/<idx>')
-@cache.cached(timeout=60, query_string=True)
+# @cache.cached(timeout=60, query_string=True) # FIXME: Cache must be disabled to count the page views
 def meme_details(idx):
-    # response = requests.get(app.config['API_ENDPOINT']+'/meme', params={'idx': idx })
-    # if response.status_code == 200:
-    #     meme = response.json()
     similar = []
-    # Make API calls here
     response = requests.get(
         app.config['API_ENDPOINT']+'/search',
-        params={'query': idx, 'count': 5, 'mode': 'image', 'threshold': 15}
+        params={'query': idx, 'count': 5, 'mode': 'image', 'threshold': 15, 'add_views': True}
     )
     if response.status_code == 200:
         try:
@@ -135,6 +131,24 @@ def templates():
 
     return redirect(url_for('index'))
 
+
+@app.route('/popular')
+def popular_memes():
+    count = int(request.args.get('count', 20))
+
+    # Get results corresponding to the current page
+    response = requests.get(
+        app.config['API_ENDPOINT']+'/popular_memes',
+        params={'count': count }
+    )
+    if response.status_code == 200: 
+        results = response.json()
+        return render_template(
+            'pages/popular_memes.html',
+            title='Meme search - Popular memes',
+            results=results
+        )
+    return redirect(url_for('index'))
 
 @app.route('/search')
 @cache.cached(timeout=60, query_string=True)

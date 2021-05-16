@@ -71,7 +71,7 @@ class SearchIndex():
 
     def load(self, filename, reader_fn=pd.read_csv):
         self.data = reader_fn(filename)
-        self.data = self.data.reset_index()
+        # self.data = self.data.reset_index()
 
     def query(self, vector, col, k=20, return_scores=False, threshold=None):
         assert col in self.trees.keys(), f'Wrong column, {col} is not indexed'

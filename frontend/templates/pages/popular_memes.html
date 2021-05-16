@@ -1,0 +1,30 @@
+{% extends "layout.html" %}
+
+{% block head %}
+{{ super() }}
+{% endblock %}
+
+{% block content %}
+{% include 'components/search_bar.html' %}
+{% from 'components/popular_meme_box.html' import popular_meme_box with context %}
+
+	<div class="features-container section-container">
+		<div class="container">
+			<div class="row">
+				<div class="col-sm-12 features section-description wow fadeIn">
+					<h2>Popular memes</h2>
+					<div class="divider-1 wow fadeInUp"><span></span></div>
+				</div>
+			</div>
+			<div class="row">
+				{% for res in results %}
+					{% if res.views > 0 %}
+						<div class="col-sm-3 features-box wow fadeInUp">
+							{{ popular_meme_box(res) }}
+						</div>
+					{% endif %}
+				{% endfor %}
+			</div>
+		</div>
+	</div>
+{% endblock %}

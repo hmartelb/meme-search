@@ -20,19 +20,21 @@ from sentence_vectorizer import SentenceVectorizer
 app = FastAPI()
 logger = logging.getLogger(__name__)
 
-varables = {}
 sv = SentenceVectorizer()
 ie = ImageExtractor()
 search_index = SearchIndex()
 
 templates_list = []
 templates = pd.DataFrame()
+popular_memes = pd.DataFrame()
+
 
 def check_image(filename):
     for ext in ALLOWED_IMAGE_EXTENSIONS:
-        if filename.endswith(ext): 
+        if filename.endswith(ext):
             return True
     return False
+
 
 @app.get('/initialize')
 @app.on_event("startup")
@@ -40,7 +42,16 @@ def initialize():
     reload_index()
     reload_templates()
     reload_sentence_vectorizer()
-    
+
+@app.on_event("shutdown")
+def shutdown_event():
+    # Save the data to preserve the meme views (popular)
+    search_index.data.to_pickle(SEARCH_INDEX_FILENAME)
+    logger = logging.getLogger('uvicorn.info')
+    logger.info(f'Success saving index data: {SEARCH_INDEX_FILENAME}')
+    return 'Success saving index data'
+
+
 @app.get('/reload_sentence_vectorizer')
 def reload_sentence_vectorizer():
     global sv
@@ -63,13 +74,13 @@ def reload_sentence_vectorizer():
         logger.error('Failed to load vectors')
         return 'Failed to load vectors'
 
+
 @app.get('/reload_index')
 def reload_index():
     global search_index
     try:
         search_index.load(filename=SEARCH_INDEX_FILENAME, reader_fn=SEARCH_READER_FN)
         search_index.build(search_cols=SEARCH_COLUMNS, max_dims=SEARCH_MAX_DIMS)
-
         # search_index.data['text'] = search_index.data['text'].fillna(value='')
     except:
         logger = logging.getLogger('uvicorn.error')
@@ -80,19 +91,21 @@ def reload_index():
     logger.info(f'Success loading index: {SEARCH_INDEX_FILENAME}')
     return 'Success loading index'
 
+
 @app.get('/reload_templates')
 def reload_templates():
     global templates
-    try: 
+    try:
         templates = pd.read_pickle(TEMPLATES_INDEX_FILENAME)
         templates = templates.reset_index()
     except:
         logger = logging.getLogger('uvicorn.error')
         logger.error('Failed to load templates')
-    
+
     logger = logging.getLogger('uvicorn.info')
     logger.info(f'Success loading templates: {TEMPLATES_INDEX_FILENAME}')
     return 'Success loading templates'
+
 
 @app.get('/autocomplete')
 def autocomplete(query_text: str, col: str = 'title'):
@@ -114,12 +127,16 @@ def autocomplete(query_text: str, col: str = 'title'):
         } for idx,row in rows.iterrows()]
     return []
 
+
 @app.get('/total_memes')
 def total_memes():
     return { 'total_memes': len(search_index.data) }
 
+
 @app.get('/meme')
 def get_meme(idx: int):
+    # Increment the views
+    search_index.data['views'].iloc[idx] += 1
     row = search_index.data.iloc[idx]
     return {
         'idx': idx,
@@ -127,8 +144,26 @@ def get_meme(idx: int):
         'url': row['url'],
         'name': row['title'],
         'text': row['text'],
+        'views': row['views'],
         'website': row['website']
     }
+
+
+@app.get('/popular_memes')
+def get_popular_memes(count: int = 20):
+    # popular_df = search_index.data.sort_values(by='views', ascending=False)
+    # popular_df = popular_df[0:count]
+    popular_df = search_index.data.nlargest(count, columns=['views'])
+    return [{
+        'idx': idx,
+        'id': row['id'],
+        'url': row['url'],
+        'name': row['title'],
+        'text': row['text'],
+        'views': row['views'],
+        'website': row['website']
+    } for idx,row in popular_df.iterrows()]
+
 
 @app.get('/templates')
 def get_templates(page: int, items_per_page: int):
@@ -137,7 +172,7 @@ def get_templates(page: int, items_per_page: int):
     # Calculate only the first time. Use global cache after first request
     if len(templates_list) == 0:
         templates_list = []
-        for i,row in templates.iterrows():
+        for i, row in templates.iterrows():
             templates_list.append({
                 'idx': i,
                 'id': row['id'],
@@ -146,19 +181,23 @@ def get_templates(page: int, items_per_page: int):
             })
 
     return {
-        'templates': templates_list[page*items_per_page:(page+1)*items_per_page], 
-        'total_pages': (len(templates_list) // items_per_page) + 1, 
-        'page': page, 
+        'templates': templates_list[page*items_per_page:(page+1)*items_per_page],
+        'total_pages': (len(templates_list) // items_per_page) + 1,
+        'page': page,
         'items_per_page': items_per_page
     }
 
-@app.get('/search')
-def index(query: str, count: int = 20, mode: str = 'both', threshold: float = 1.0):
 
-    if mode == 'both': search_column = 'fusion_text_glove'
-    if mode == 'title': search_column = 'title_glove'
-    if mode == 'content': search_column = 'ocr_glove'
-    if mode in ['image', 'url', 'template']: search_column = 'img_embedding'
+@app.get('/search')
+def search(query: str, count: int = 20, mode: str = 'both', threshold: float = 1.0, add_views: bool = False):
+    if mode == 'both':
+        search_column = 'fusion_text_glove'
+    if mode == 'title':
+        search_column = 'title_glove'
+    if mode == 'content':
+        search_column = 'ocr_glove'
+    if mode in ['image', 'url', 'template']:
+        search_column = 'img_embedding'
 
     if query:
         start = time.time()
@@ -182,17 +221,21 @@ def index(query: str, count: int = 20, mode: str = 'both', threshold: float = 1.
             img_entry = search_index.data.iloc[int(query)]
             query_embedding = img_entry[search_column]
             query_embedding = np.asarray(query_embedding)
+
+            # Used in the meme details page only
+            if add_views: 
+                search_index.data['views'].iloc[int(query)] += 1
         else:
             # Calculate the embedding of the query
             query_embedding = sv.encode(query)
 
         # Perform the query in the index
         query_results, scores = search_index.query(
-            vector=query_embedding, 
-            col=search_column, 
-            k=count, 
+            vector=query_embedding,
+            col=search_column,
+            k=count,
             return_scores=True,
-            # threshold=threshold
+            # threshold=threshold # NOTE: In practice, it is better to apply the threshold after
         )
         valid_results = 0
         for score in scores:
@@ -209,7 +252,7 @@ def index(query: str, count: int = 20, mode: str = 'both', threshold: float = 1.
                     'url': item['url'],
                     'score': score
                 })
-        
+
         # Insert the template itself as first result in this mode
         if mode == 'template':
             temp = templates.iloc[int(query)]
@@ -223,9 +266,9 @@ def index(query: str, count: int = 20, mode: str = 'both', threshold: float = 1.
 
         # # Find exact matches if there is a text query
         # if mode not in ['image', 'url', 'template']:
-            
+
         #     exact_matches = search_index.data[search_index.data['title'].str.contains(query, flags=re.IGNORECASE)]
-            
+
         #     print(f"Exact matches {len(exact_matches)}")
 
         #     for i,item in exact_matches.iterrows():
@@ -238,11 +281,13 @@ def index(query: str, count: int = 20, mode: str = 'both', threshold: float = 1.
         #         })
 
         logger = logging.getLogger('uvicorn.info')
-        logger.info(f'QUERY: "{query}" ({np.round(time.time()-start, 4)} s., top-{count})')
-        
+        logger.info(
+            f'QUERY: "{query}" ({np.round(time.time()-start, 4)} s., top-{count})')
+
         return {'results': results, 'valid_results': valid_results}
 
     return {'message': 'Error, query is empty!'}
+
 
 if __name__ == "__main__":
     import argparse
@@ -253,7 +298,7 @@ if __name__ == "__main__":
     ap.add_argument('--port', type=int, default=10000)
     ap.add_argument('--gpu', default='-1')
     args = ap.parse_args()
-    
+
     # Set GPU
     os.environ['CUDA_VISIBLE_DEVICES'] = args.gpu
 
