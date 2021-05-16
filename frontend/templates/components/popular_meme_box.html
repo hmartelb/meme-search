@@ -8,8 +8,11 @@
 			<a href="{{ url_for('meme_details', idx=result.idx) }}">
 				<h4 class="card-title">{{ result.name | truncate(25) }}</h4>
 			</a>
-            <p>{{ result.views }} views</p>         
-            
+			{% if result.views > 1 %}
+            	<p>{{ result.views }} views</p>         
+			{% else %}
+				<p>{{ result.views }} view</p>         	
+			{% endif %}
             <form  method="GET" action="{{ url_for('search') }}">
                 <input type="hidden" name="query" value="{{ result.idx }}">
                 <input type="hidden" name="mode" value="image">
