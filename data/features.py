@@ -5,6 +5,7 @@ import time
 
 import cv2
 import easyocr
+import imagehash
 import matplotlib.pyplot as plt
 import numpy as np
 import pytesseract
@@ -132,6 +133,23 @@ class ImageExtractor():
 
         self.cos_sim = torch.nn.CosineSimilarity(dim=-1, eps=1e-6)
 
+    def to_hash(self, filename, hash_size=8):
+        '''
+        Calculate the LSH for near-duplicate image detection, as per the following code:
+        https://github.com/mendesk/image-ndd-lsh
+
+        Args:
+            filename: the image (path as string) to calculate the signature for
+            hash_size: hash size to use, signatures will be of length hash_size^2
+    
+        Returns:
+            signature: Image signature as Numpy array
+        '''
+        image = Image.open(filename).convert("L").resize((hash_size+1, hash_size), Image.ANTIALIAS)
+        dhash = imagehash.dhash(image, hash_size)
+        signature = dhash.hash.flatten()
+        return signature
+
     def to_vec(self, filename, to_numpy=False):
         '''
         https://stackoverflow.com/questions/63552044/how-to-extract-feature-vector-from-single-image-in-pytorch
@@ -205,6 +223,8 @@ if __name__ == '__main__':
     df['ocr_glove'] = None
     df['fusion_text_glove'] = None
     df['img_embedding'] = None
+    df['img_lsh'] = None
+    df['views'] = 0
 
     to_drop = []
     for i, row in tqdm(df.iterrows(), total=len(df)):
@@ -225,6 +245,9 @@ if __name__ == '__main__':
             df['img_embedding'].iloc[i] = ie.to_vec(
                 filename=os.path.join(args.downloads_folder, row['id']+row['format']),
                 to_numpy=True
+            )
+            df['img_lsh'].iloc[i] = ie.to_hash(
+                filename=os.path.join(args.downloads_folder, row['id']+row['format']),
             )
         except:
             print(f"Error while processing row image at index {i}")

@@ -1,6 +1,9 @@
+import imagehash
+import numpy as np
 import torch
 import torchvision
 from PIL import Image
+
 
 class ImageExtractor():
     def __init__(self):
@@ -17,6 +20,23 @@ class ImageExtractor():
         ])
 
         self.cos_sim = torch.nn.CosineSimilarity(dim=-1, eps=1e-6)
+
+    def to_hash(self, filename, hash_size=8):
+        '''
+        Calculate the LSH for near-duplicate image detection, as per the following code:
+        https://github.com/mendesk/image-ndd-lsh
+
+        Args:
+            filename: the image (path as string) to calculate the signature for
+            hash_size: hash size to use, signatures will be of length hash_size^2
+    
+        Returns:
+            signature: Image signature as Numpy array
+        '''
+        image = Image.open(filename).convert("L").resize((hash_size+1, hash_size), Image.ANTIALIAS)
+        dhash = imagehash.dhash(image, hash_size)
+        signature = dhash.hash.flatten()
+        return signature
 
     def to_vec(self, filename, to_numpy=False):
         '''
