@@ -122,3 +122,4 @@ data/images/
 data/templates
 *.pkl
 *.bat
+*.zip
