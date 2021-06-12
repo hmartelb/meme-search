@@ -10,11 +10,15 @@
         <title>{{ title }}</title>
 
         <!-- CSS -->
-        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:100,100i,300,300i,500,500i') }}">
+        <!-- <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:100,100i,300,300i,500,500i') }}">
         <link rel="stylesheet" href="{{ url_for('static', filename='/bootstrap/css/bootstrap.min.css') }}">
         <link rel="stylesheet" href="{{ url_for('static', filename='/font-awesome/css/font-awesome.min.css') }}">
         <link rel="stylesheet" href="{{ url_for('static', filename='/css/animate.css') }}">
-        <link rel="stylesheet" href="{{ url_for('static', filename='/css/style.css') }}">
+        <link rel="stylesheet" href="{{ url_for('static', filename='/css/style.css') }}"> -->
+
+        {% assets "css_all" %}
+            <link rel="stylesheet" href="{{ ASSET_URL }}">
+        {% endassets %}
 
         <!-- HTML5 Shim and Respond.js IE8 support of HTML5 elements and media queries -->
         <!-- WARNING: Respond.js doesn't work if you view the page via file:// -->
@@ -59,10 +63,15 @@
         {% include 'components/footer.html' %}
 
         <!-- Javascript -->
-        <script src="{{ url_for('static', filename='/js/jquery-1.11.1.min.js') }}"></script>
+        {% assets "js_all" %}
+            <script type="text/javascript" src="{{ ASSET_URL }}"></script>
+        {% endassets %}
+        
+        <!-- <script src="{{ url_for('static', filename='/js/jquery-1.11.1.min.js') }}"></script>
         <script src="{{ url_for('static', filename='/bootstrap/js/bootstrap.min.js') }}"></script>
         <script src="{{ url_for('static', filename='/js/jquery.backstretch.min.js') }}"></script>
-        <script src="{{ url_for('static', filename='/js/wow.min.js') }}"></script>
+        <script src="{{ url_for('static', filename='/js/wow.min.js') }}"></script> -->
+
         <!-- <script src="{{ url_for('static', filename='/js/scripts.js') }}"></script> -->
 
         <script>

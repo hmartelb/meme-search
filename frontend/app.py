@@ -11,7 +11,28 @@ app = Flask(__name__)
 app.config.from_object('config')
 cache = Cache()
 cache.init_app(app, config={'CACHE_TYPE': 'simple'})
-# assets = Environment(app)
+assets = Environment(app)
+
+css_all = Bundle(
+    'bootstrap/css/bootstrap.min.css',
+    'font-awesome/css/font-awesome.min.css',
+    'css/animate.css',
+    'css/style.css',
+    filters='cssmin',
+    output='assets/bundle.css'
+
+)
+assets.register('css_all', css_all)
+
+js_all = Bundle(
+    'js/jquery-1.11.1.min.js',
+    'bootstrap/js/bootstrap.min.js', 
+    'js/jquery.backstretch.min.js',
+    'js/wow.min.js',   
+    filters='jsmin', 
+    output='assets/bundle.js'
+)
+assets.register('js_all', js_all)
 
 
 def check_url_in_query(text):

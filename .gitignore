@@ -123,3 +123,6 @@ data/templates
 *.pkl
 *.bat
 *.zip
+
+# Minified CSS and JS files (production)
+frontend/static/assets/*
