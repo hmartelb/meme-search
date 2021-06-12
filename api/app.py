@@ -9,6 +9,7 @@ import numpy as np
 import pandas as pd
 import requests
 from fastapi import FastAPI, Request
+from fastapi_utils.tasks import repeat_every
 from scipy.spatial import distance
 
 # import scipy
@@ -43,8 +44,13 @@ def initialize():
     reload_templates()
     reload_sentence_vectorizer()
 
+
 @app.on_event("shutdown")
 def shutdown_event():
+    save_index()
+
+# @repeat_every(seconds=10) # 10 min
+def save_index():
     # Save the data to preserve the meme views (popular)
     search_index.data.to_pickle(SEARCH_INDEX_FILENAME)
     logger = logging.getLogger('uvicorn.info')
@@ -79,8 +85,10 @@ def reload_sentence_vectorizer():
 def reload_index():
     global search_index
     try:
-        search_index.load(filename=SEARCH_INDEX_FILENAME, reader_fn=SEARCH_READER_FN)
-        search_index.build(search_cols=SEARCH_COLUMNS, max_dims=SEARCH_MAX_DIMS)
+        search_index.load(filename=SEARCH_INDEX_FILENAME,
+                          reader_fn=SEARCH_READER_FN)
+        search_index.build(search_cols=SEARCH_COLUMNS,
+                           max_dims=SEARCH_MAX_DIMS)
         # search_index.data['text'] = search_index.data['text'].fillna(value='')
     except:
         logger = logging.getLogger('uvicorn.error')
@@ -111,7 +119,8 @@ def reload_templates():
 def autocomplete(query_text: str, col: str = 'title'):
     if len(query_text) >= 2:
         # Get matching entries for title and text content
-        rows_title = search_index.data[search_index.data['title'].str.contains(query_text, flags=re.IGNORECASE)]
+        rows_title = search_index.data[search_index.data['title'].str.contains(
+            query_text, flags=re.IGNORECASE)]
         # rows_text = search_index.data[search_index.data['text'].str.contains(query_text, flags=re.IGNORECASE)]
 
         # Combine them and drop duplicates
@@ -124,13 +133,18 @@ def autocomplete(query_text: str, col: str = 'title'):
             'name': row['title'],
             'text': row['text'],
             'website': row['website']
-        } for idx,row in rows.iterrows()]
+        } for idx, row in rows.iterrows()]
     return []
 
 
 @app.get('/total_memes')
 def total_memes():
-    return { 'total_memes': len(search_index.data) }
+    return {'total_memes': len(search_index.data)}
+
+
+# @app.get('/data_to_json')
+# def data_to_json():
+#     return search_index.data.to_json()
 
 
 @app.get('/meme')
@@ -162,7 +176,7 @@ def get_popular_memes(count: int = 20):
         'text': row['text'],
         'views': row['views'],
         'website': row['website']
-    } for idx,row in popular_df.iterrows()]
+    } for idx, row in popular_df.iterrows()]
 
 
 @app.get('/templates')
@@ -201,7 +215,7 @@ def search(query: str, count: int = 20, mode: str = 'both', threshold: float = 1
 
     if query:
         start = time.time()
-        
+
         if mode == 'url':
             if not check_image(query):
                 return {'results': [], 'valid_results': 0}
@@ -223,7 +237,7 @@ def search(query: str, count: int = 20, mode: str = 'both', threshold: float = 1
             query_embedding = np.asarray(query_embedding)
 
             # Used in the meme details page only
-            if add_views: 
+            if add_views:
                 search_index.data['views'].iloc[int(query)] += 1
         else:
             # Calculate the embedding of the query
