@@ -125,6 +125,7 @@ data/templates
 !api/templates.pkl
 *.bat
 *.zip
+*.tsv
 
 # Minified CSS and JS files (production)
 frontend/static/assets/*
