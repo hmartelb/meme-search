@@ -121,6 +121,8 @@ api/pretrained/
 data/images/
 data/templates
 *.pkl
+!api/index_clean.pkl
+!api/templates.pkl
 *.bat
 *.zip
 
