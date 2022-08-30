@@ -1,4 +1,22 @@
+______________________________________________________________________
+
+<div align="center">
+
 # Meme Search
+
+![Python](https://img.shields.io/badge/python-3670A0?style=for-the-badge&logo=python&logoColor=ffdd54)
+![Flask](https://img.shields.io/badge/flask-%23000.svg?style=for-the-badge&logo=flask&logoColor=white)
+![FastAPI](https://img.shields.io/badge/FastAPI-005571?style=for-the-badge&logo=fastapi)
+![Pandas](https://img.shields.io/badge/pandas-%23150458.svg?style=for-the-badge&logo=pandas&logoColor=white)
+![PyTorch](https://img.shields.io/badge/PyTorch-%23EE4C2C.svg?style=for-the-badge&logo=PyTorch&logoColor=white)
+
+
+<!-- [![Project report](https://img.shields.io/badge/Project_report-Read-00ff00.svg)](docs/MemeSearch_HectorMartel.pdf) -->
+
+<!-- <a href="https://pytorch.org/get-started/locally/"><img alt="PyTorch" src="https://img.shields.io/badge/PyTorch-ee4c2c?logo=pytorch&logoColor=white"></a> -->
+</div>
+
+
 Search Engine for memes built for the final project of Web Information Retrieval at Tsinghua University, Spring semester 2021.
 
 ![Meme search - homepage](docs/img/homepage.png)
